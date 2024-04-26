@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders List</title>
+    <!-- Bootstrap CSS with blue theme -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f8ff; /* Light Blue */
+        }
+        .navbar {
+            background-color: #4682b4; /* Steel Blue */
+        }
+        .navbar-dark .navbar-toggler-icon {
+            background-color: #fff; /* White */
+        }
+        .navbar-nav a {
+            color: #fff !important; /* White */
+        }
+        .container {
+            margin-top: 20px;
+        }
+        /* Custom button style */
+        .btn-custom {
+            background-color: #007bff; /* Blue */
+            color: #fff;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3; /* Darker Blue on hover */
+        }
+        /* Adjusted table style */
+        .table th, .table td {
+            text-align: center;
+			 width: 250px; /* Adjust the width as needed */
+        }
+    </style>
+</head>
+<body>
+
+{% include 'admin_navbar.html' %}
+
+<!-- Content -->
+<div class="container mt-4">
+    <h2>Orders List</h2>
+	
+	{%with messages = get_flashed_messages()%}
+	{%if messages%}
+	{%for message in messages%}
+	<p class="text-lg {% if 'no' in message | lower or 'failed' in message | lower or 'unable' in message | lower %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
+	{%endfor%}
+	{%endif%}
+	{%endwith%}
+
+    <!-- Orders List -->
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Order ID</th>
+                <th scope="col">Customer Name</th>
+                <th scope="col">Order Date</th>
+                <th scope="col">Total Amount</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+			{% for row in orders|reverse %}
+            <!-- Sample order -->
+            <tr data-toggle="modal" data-target="#orderDetailsModal_{{row.3}}">
+                <td>{{row.0}}</td>
+                <td>{{row.1}}</td>
+                <td>{{row.2}}</td>
+                <td>${{row.4}}</td>
+                <td>{{row.5}}</td>
+            </tr>
+			
+			<!-- Order Details Modal -->
+			<div class="modal fade" id="orderDetailsModal_{{row.3}}" tabindex="-1" role="dialog" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<h6>Order Date: {{row.2}}</h6>
+							<h6>Customer Name: {{row.1}}</h6>
+
+								<div class="item-list">
+									<div class="row">
+										<div class="col-md-4">
+											<p><strong>Item Name:</strong></p>
+										</div>
+										<div class="col-md-4">
+											<p><strong>ISBN:</strong></p>
+										</div>
+										<div class="col-md-4">
+											<p><strong>Quantity:</strong></p>
+										</div>
+									</div>
+									
+									{% for data in data2 %}
+									{% if data.0 == row.0 %}
+									<div class="row">
+										<div class="col-md-4">
+											<p>{{data.2}}</p>
+										</div>
+										<div class="col-md-4">
+											<p>{{data.3}}</p>
+										</div>
+										<div class="col-md-4">
+											<p>{{data.4}}</p>
+										</div>
+									</div>
+									{% endif %}
+									{% endfor %}
+								</div>
+
+							<h6>Total Price: ${{row.4}}</h6>
+
+							<!-- Update Status Form -->
+							<form action="{{url_for('updateOrderStatus')}}" method="POST">
+								<div class="form-group">
+									<input type="hidden" name="id" value="{{row.0}}">
+									<label for="orderStatus">Update Status:</label>
+									
+									{% if row.5 == 'Cancelled' %}
+									
+									<select name="status" class="form-control" id="orderStatus" readonly>
+										<option value="Cancelled" selected>Cancelled</option>
+									</select>
+									
+									{% else %}
+									
+									<select name="status" class="form-control" id="orderStatus">
+											{% if row.5 == 'Pending' %}
+											<option value="Pending" >Pending</option>
+											<option value="Delivered">Delivered</option>
+											<option value="Cancelled">Cancelled</option>
+											{% endif %}
+											{% if row.5 == 'Delivered' %}
+											<option value="Delivered" >Delivered</option>
+											<option value="Pending">Pending</option>
+											<option value="Cancelled">Cancelled</option>
+											{% endif %}
+									</select>
+									{% endif %}
+								</div>
+								{% if 'Cancelled' not in row.5 %}
+								<button type="submit" class="btn btn-primary">Update Status</button>
+								{% endif %}
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+            {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Bootstrap JS and Popper.js (Optional) -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>

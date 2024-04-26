@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body style="background-color: #ffffff;">
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Shop</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#">Shop</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Cart</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Orders</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Logout</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="container mt-4">
+    <h2 class="text-dark">Your Order History</h2>
+
+    <!-- Order 1 -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">
+            Order Date: January 1, 2023
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <!-- Item 1 -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Item Name 1
+                    <span class="badge badge-primary badge-pill">Quantity: 2</span>
+                    <span class="badge badge-secondary badge-pill">$19.99</span>
+                </li>
+                <!-- Item 2 -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Item Name 2
+                    <span class="badge badge-primary badge-pill">Quantity: 1</span>
+                    <span class="badge badge-secondary badge-pill">$29.99</span>
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer text-muted bg-light">
+            Total Price: $49.97
+            <span class="float-right">Status: Completed</span>
+        </div>
+    </div>
+
+    <!-- Order 2 (Add more orders as needed) -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">
+            Order Date: February 1, 2023
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <!-- Item 1 -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Item Name 3
+                    <span class="badge badge-primary badge-pill">Quantity: 3</span>
+                    <span class="badge badge-secondary badge-pill">$39.99</span>
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer text-muted bg-light">
+            Total Price: $119.97
+            <span class="float-right">Status: Pending</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap JS and Popper.js (Optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

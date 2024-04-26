@@ -1,0 +1,226 @@
+-- Create users table
+CREATE TABLE users (
+  u_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username VARCHAR(30) NOT NULL UNIQUE,
+  password VARCHAR(30) NOT NULL,
+  u_type VARCHAR(30) NOT NULL,
+  status INTEGER NOT NULL
+);
+
+-- Create admins table
+CREATE TABLE admins (
+  a_id INTEGER PRIMARY KEY,
+  a_name VARCHAR(50) NOT NULL,
+  a_email VARCHAR(50),
+  a_address VARCHAR(80),
+  status INTEGER NOT NULL,
+  FOREIGN KEY (a_id) REFERENCES users(u_id) ON DELETE CASCADE
+);
+
+-- Create customer table
+CREATE TABLE customer (
+  c_id INTEGER PRIMARY KEY,
+  c_name VARCHAR(50) NOT NULL,
+  c_email VARCHAR(50),
+  c_address VARCHAR(80),
+  status INTEGER NOT NULL,
+  FOREIGN KEY (c_id) REFERENCES users(u_id) ON DELETE CASCADE
+);
+
+-- Create items table
+CREATE TABLE items (
+  i_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  isbn VARCHAR(15) UNIQUE,
+  title VARCHAR(30) NOT NULL,
+  author VARCHAR(50),
+  genre VARCHAR(30),
+  price DECIMAL(10,2),
+  i_type VARCHAR(15),
+  status INTEGER NOT NULL
+);
+
+-- Create itemsOrdered table
+CREATE TABLE itemsOrdered (
+  io_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  c_id INTEGER,
+  i_id INTEGER,
+  qty INTEGER,
+  status INTEGER NOT NULL,
+  FOREIGN KEY (i_id) REFERENCES items(i_id) ON DELETE CASCADE,
+  FOREIGN KEY (c_id) REFERENCES customer(c_id) ON DELETE CASCADE
+);
+
+-- Create cart table
+CREATE TABLE cart (
+    cart_id INTEGER,
+    date_created DATE,
+    PRIMARY KEY (cart_id),
+    FOREIGN KEY (cart_id) REFERENCES customer(c_id) ON DELETE CASCADE
+);
+
+-- Create orders table
+CREATE TABLE orders (
+    o_id INTEGER,
+    o_date DATE,
+    ship_address VARCHAR(100),
+    c_id INTEGER,
+    io_id INTEGER,
+    PRIMARY KEY (o_id, c_id, io_id),
+    FOREIGN KEY (c_id) REFERENCES customer(c_id) ON DELETE CASCADE,
+    FOREIGN KEY (io_id) REFERENCES itemsOrdered(io_id) ON DELETE CASCADE
+);
+
+
+drop table orders;
+drop table cart;
+drop table itemsordered;
+
+INSERT INTO orders VALUES('1', '2023-11-12', 'Tabunok Talisay City', '2', '4');
+
+
+SELECT items.title, items.price, itemsordered.qty
+FROM items
+JOIN itemsordered ON itemsordered.i_id = items.i_id
+WHERE itemsordered.c_id = '2' and itemsordered.status = '1';
+
+SELECT SUM(items.price * itemsordered.qty) AS total_price FROM items JOIN itemsordered ON itemsordered.i_id = items.i_id WHERE itemsordered.c_id = '2' AND itemsordered.status = '1';
+
+
+SELECT customer .c_address
+FROM customer
+JOIN users  ON customer .c_id = users.id
+WHERE users.id = '{id}' AND customer .status = 1;
+
+
+
+SELECT
+	orders.o_id,
+	orders.o_date,
+	items.title AS i_name,
+	items.price,
+	itemsordered.qty
+FROM
+	orders
+JOIN
+	itemsordered ON orders.io_id = itemsordered.io_id
+JOIN
+	items ON itemsordered.i_id = items.i_id
+WHERE
+	orders.c_id = 2
+ORDER BY
+	orders.o_id;
+
+
+
+
+
+
+
+
+
+
+INSERT INTO users (username, password, u_type, status) VALUES
+('admin', '123', 'admin', 1),
+('aguilar', 'aguilar', 'customer', 1),
+('alba', 'alba', 'customer', 1),
+('alcarmen', 'alcarmen', 'customer', 1);
+
+INSERT INTO admins (a_id, a_name, a_email, a_address, status) VALUES
+(1, 'Rey Aaron Buaya', 'reycrocs@gmail.com', 'Pardo Cebu City', 1);
+
+INSERT INTO customer (c_id, c_name, c_email, c_address, status) VALUES
+(2, 'Jermaine Aguilar', 'jermaine.aguilar@gmail.com', 'Tabunok Talisay City', 1),
+(3, 'Angela Monique Alba', 'angela.monique.alba@yahoo.com', 'Inayawan Cebu City', 1),
+(4, 'Brandon Alcarmen', 'brandon.alcarmen@gmail.com', 'Bulacao Cebu City', 1);
+
+
+INSERT INTO customer (c_name, c_email, c_address, status) VALUES
+('Jermaine Aguilar', 'jermaine.aguilar@gmail.com', 'Tabunok Talisay City', 1),
+('Angela Monique Alba', 'angela.monique.alba@yahoo.com', 'Pardo Cebu City', 1),
+('Brandon Alcarmen', 'brandon.alcarmen@gmail.com', 'Bulacao Cebu City', 1),
+('Beatrice Abigail Alindao', 'beatrice.abigail.alindao@yahoo.com', 'Tabok Mandaue City', 1),
+('Kimberly Mae Alipin', 'kimberly.mae.alipin@gmail.com', 'Canduman Mandaue City', 1),
+('Danilo Almario Jr.', 'danilo.almario@gmail.com', 'Lahug Cebu City', 1),
+('Brayl James Amaquin', 'brayl.james.amaquin@yahoo.com', 'Tinaan Naga City', 1),
+('Christine Grace Andiason', 'christine.grace.andiason@gmail.com', 'Langtad Naga City', 1),
+('John Jeric Andrade', 'john.jeric.andrade@yahoo.com', 'Babag Lapu-Lapu', 1),
+('Jasper Eldrich Ballesteros', 'jasper.eldrich.ballesteros@gmail.com', 'Basak Lapu-Lapu', 1),
+('Aldrich Batisla-On', 'aldrich.batislaon@yahoo.com', 'Agus Lapu-Lapu', 1),
+('Kierzen Ivan Jay Booc', 'kierzen.ivan.booc@gmail.com', 'Guadalupe Cebu City', 1),
+('Rey Aaron Buaya', 'rey.aaron.buaya@gmail.com', 'Pardo Cebu City', 1),
+('John Melvin Burila', 'john.melvin.burila@yahoo.com', 'Tabunok Talisay City', 1),
+('Fregielyn Cabriana', 'fregielyn.cabriana@gmail.com', 'Pardo Cebu City', 1),
+('Jhomar Canumay', 'jhomar.canumay@yahoo.com', 'Bulacao Cebu City', 1),
+('David John Capoy', 'david.john.capoy@gmail.com', 'Tabok Mandaue City', 1),
+('Joshua Caranzo', 'joshua.caranzo@yahoo.com', 'Canduman Mandaue City', 1),
+('Krystel Kaye Carpentero', 'krystel.kaye.carpentero@gmail.com', 'Lahug Cebu City', 1),
+('Frances Diana Carsido', 'frances.diana.carsido@yahoo.com', 'Tinaan Naga City', 1),
+('John Benedict Cinco', 'john.benedict.cinco@gmail.com', 'Langtad Naga City', 1),
+('Nichole Ann Dinauanao', 'nichole.ann.dinauanao@yahoo.com', 'Babag Lapu-Lapu', 1),
+('Giliane Aze Dorado', 'giliane.aze.dorado@gmail.com', 'Basak Lapu-Lapu', 1),
+('Roy Dumasig', 'roy.dumasig@yahoo.com', 'Agus Lapu-Lapu', 1),
+('Christan Jay Espanol', 'christan.jay.espanol@gmail.com', 'Guadalupe Cebu City', 1),
+('Lemarc Eyac', 'lemarc.eyac@gmail.com', 'Tabunok Talisay City', 1),
+('Shyra Galon', 'shyra.galon@yahoo.com', 'Pardo Cebu City', 1),
+('Generoso Gastardo Jr.', 'generoso.gastardo@gmail.com', 'Bulacao Cebu City', 1),
+('Anton James Genabio', 'anton.james.genabio@yahoo.com', 'Tabok Mandaue City', 1),
+('Nedrey Jon Golosino', 'nedrey.jon.golosino@gmail.com', 'Canduman Mandaue City', 1),
+('John Edward Laad', 'john.edward.laad@yahoo.com', 'Lahug Cebu City', 1),
+('Ronald Dave Lazarte', 'ronald.dave.lazarte@gmail.com', 'Tinaan Naga City', 1),
+('Kyle Andre Lim', 'kyle.andre.lim@yahoo.com', 'Langtad Naga City', 1),
+('Irene Luga', 'irene.luga@gmail.com', 'Babag Lapu-Lapu', 1),
+('Shyrelle Shine Managaytay', 'shyrelle.shine.managaytay@yahoo.com', 'Basak Lapu-Lapu', 1),
+('Kirkt Kaila Manreal', 'kirkt.kaila.manreal@gmail.com', 'Agus Lapu-Lapu', 1),
+('Daniel Mayor', 'daniel.mayor@yahoo.com', 'Guadalupe Cebu City', 1),
+('Kim Nengasca', 'kim.nengasca@gmail.com', 'Tabunok Talisay City', 1),
+('Mary Anne Niones', 'mary.anne.niones@yahoo.com', 'Pardo Cebu City', 1),
+('Dione Louis Nipaya', 'dione.louis.nipaya@gmail.com', 'Bulacao Cebu City', 1),
+('Leo Osabel', 'leo.osabel@gmail.com', 'Canduman Mandaue City', 1),
+('Jade Panugalon', 'jade.panugalon@yahoo.com', 'Lahug Cebu City', 1),
+('Niel Justin Paulin', 'niel.justin.paulin@gmail.com', 'Tinaan Naga City', 1),
+('Rhodney Dame Ponsica', 'rhodney.dame.ponsica@yahoo.com', 'Langtad Naga City', 1),
+('Jude Saagundo', 'jude.saagundo@gmail.com', 'Babag Lapu-Lapu', 1),
+('Cesar Ian Sacare', 'cesar.ian.sacare@yahoo.com', 'Basak Lapu-Lapu', 1),
+('Jude Jefferson Sandalo', 'jude.jefferson.sandalo@gmail.com', 'Agus Lapu-Lapu', 1),
+('Charina Mie Tulod', 'charina.mie.tulod@yahoo.com', 'Guadalupe Cebu City', 1),
+('Allan Jr. Villegas', 'allan.jr.villegas@gmail.com', 'Tabunok Talisay City', 1);
+
+
+INSERT INTO items (isbn, title, author, genre, price, i_type, status) VALUES
+('9780451524935', 'To Kill a Mockingbird', 'Harper Lee', 'Fiction', 10.99, 'Book', 1),
+('9780743273565', 'The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 12.49, 'Book', 1),
+('9781984801460', '1984', 'George Orwell', 'Dystopian', 8.99, 'Book', 1),
+('9780061120084', 'Fahrenheit 451', 'Ray Bradbury', 'Dystopian', 9.75, 'Book', 1),
+('9780140449266', 'Pride and Prejudice', 'Jane Austen', 'Romance', 7.99, 'Book', 1),
+('9780307477729', 'The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 11.25, 'Book', 1),
+('9780060935467', 'To the Lighthouse', 'Virginia Woolf', 'Fiction', 10.00, 'Book', 1),
+('9780385472579', 'Brave New World', 'Aldous Huxley', 'Dystopian', 10.99, 'Book', 1),
+('9780446310789', 'One Hundred Years of Solitude', 'Gabriel Garcia Marquez', 'Magical Realism', 12.99, 'Book', 1),
+('9780143128542', 'The Road', 'Cormac McCarthy', 'Post-Apocalyptic', 9.99, 'Book', 1),
+('9780743477123', 'Lord of the Flies', 'William Golding', 'Adventure', 8.49, 'Book', 1),
+('9780743273566', 'The Hobbit', 'J.R.R. Tolkien', 'Fantasy', 13.50, 'Book', 1),
+('9780061120085', 'Harry Potter and the Sorcerer''s Stone', 'J.K. Rowling', 'Fantasy', 12.75, 'Book', 1),
+('9780140449267', 'The Old Man and the Sea', 'Ernest Hemingway', 'Adventure', 7.75, 'Book', 1),
+('9780307477730', 'Moby-Dick', 'Herman Melville', 'Adventure', 11.99, 'Book', 1),
+('9780060935468', 'The Alchemist', 'Paulo Coelho', 'Adventure', 9.99, 'Book', 1),
+('9780385472578', 'The Shining', 'Stephen King', 'Horror', 10.49, 'Book', 1),
+('9780446310780', 'The Da Vinci Code', 'Dan Brown', 'Mystery', 8.99, 'Book', 1),
+('9780143128543', 'The Girl w the Dragon Tattoo', 'Stieg Larsson', 'Mystery', 12.49, 'Book', 1),
+('9780451524936', 'A Tale of Two Cities', 'Charles Dickens', 'Historical Fiction', 7.99, 'Book', 1),
+('9780743273567', 'War and Peace', 'Leo Tolstoy', 'Historical Fiction', 13.99, 'Book', 1),
+('9781984801461', 'The Odyssey', 'Homer', 'Epic Poetry', 11.75, 'Book', 1),
+('9780061120086', 'The Iliad', 'Homer', 'Epic Poetry', 10.25, 'Book', 1),
+('9780140449268', 'The Divine Comedy', 'Dante Alighieri', 'Epic Poetry', 8.99, 'Book', 1),
+('9780307477731', 'Anna Karenina', 'Leo Tolstoy', 'Romance', 9.99, 'Book', 1),
+('9780060935469', 'Crime and Punishment', 'Fyodor Dostoevsky', 'Crime Fiction', 12.49, 'Book', 1),
+('9780385472577', 'The Count of Monte Cristo', 'Alexandre Dumas', 'Adventure', 11.99, 'Book', 1),
+('9780446310781', 'The Picture of Dorian Gray', 'Oscar Wilde', 'Gothic Fiction', 10.49, 'Book', 1),
+('9780143128544', 'Dracula', 'Bram Stoker', 'Gothic Fiction', 7.99, 'Book', 1),
+('9780451524937', 'Frankenstein', 'Mary Shelley', 'Gothic Fiction', 9.75, 'Book', 1),
+('9780743273568', 'The Road Not Taken', 'Robert Frost', 'Poetry', 8.99, 'Book', 1),
+('9781984801462', 'Leaves of Grass', 'Walt Whitman', 'Poetry', 12.25, 'Book', 1),
+('9780061120087', 'The Waste Land', 'T.S. Eliot', 'Poetry', 9.99, 'Book', 1),
+('9780140449269', 'The Sun Also Rises', 'Ernest Hemingway', 'Fiction', 10.49, 'Book', 1),
+('9780307477732', 'The Secret Garden', 'Frances Hodgson Burnett', 'Children''s', 7.99, 'Book', 1),
+('9780385472576', 'Alice Adventures in Wonderland', 'Lewis Carroll', 'Children''s', 9.75, 'Book', 1),
+('9780446310782', 'The Chronicles of Narnia', 'C.S. Lewis', 'Fantasy', 11.25, 'Book', 1);

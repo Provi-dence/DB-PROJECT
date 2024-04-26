@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Items List</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .navbar-light {
+            background-color: #f8f9fa !important;
+        }
+        .table {
+            background-color: #FF0000; /* Red background */
+            color: #ffffff; /* White font color */
+            border-radius: 10px; /* Rounded corners */
+        }
+        .table th,
+        .table td {
+            border-color: #ffffff !important; /* White border color */
+        }
+        .btn-instagram {
+            background-color: #fd4444;
+            color: #ffffff;
+        }
+        .btn-instagram:hover {
+            background-color: #af1313;
+            color: #ffffff;
+        }
+        .modal-label {
+            color: #000000;
+        }
+        /* Custom styles for the "Add Item" button */
+        .btn-add-item {
+            background-color: #FF0000 !important; /* Red background */
+            color: #ffffff;
+            border: 2px solid #FF0000 !important; /* Red border */
+        }
+        .btn-add-item:hover {
+            background-color: #c50707 !important; /* Dark red background on hover */
+        }
+    </style>
+</head>
+<body style="background-color: #ffffff; color: #000000;">
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#"><img src="./ALONZO DB/static/images/logo.png" alt="Bookabook"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Customers</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Items</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Orders</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    admin@example.com
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="#">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="container mt-4">
+    <h2>Items List</h2>
+
+    <!-- Search Bar -->
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search for items" aria-label="Search for items" aria-describedby="basic-addon2">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button">Search</button>
+        </div>
+    </div>
+
+    <!-- Add Item Button -->
+    <button class="btn btn-add-item mb-3" data-toggle="modal" data-target="#addItemModal">Add Item</button>
+
+    <!-- Items List -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ISBN</th>
+                <th scope="col">Title</th>
+                <th scope="col">Author</th>
+                <th scope="col">Genre</th>
+                <th scope="col">Price</th>
+                <th scope="col">Type</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Sample item -->
+            <tr>
+                <td>123456789</td>
+                <td>Sample Book</td>
+                <td>John Author</td>
+                <td>Fiction</td>
+                <td>$19.99</td>
+                <td>Book</td>
+                <td>50</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editItemModal">Edit</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteItemModal">Delete</button>
+                </td>
+            </tr>
+            <!-- Add more items here -->
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Item Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="addItemISBN">ISBN:</label>
+                        <input type="text" class="form-control" id="addItemISBN" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemTitle">Title:</label>
+                        <input type="text" class="form-control" id="addItemTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemAuthor">Author:</label>
+                        <input type="text" class="form-control" id="addItemAuthor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemGenre">Genre:</label>
+                        <input type="text" class="form-control" id="addItemGenre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemPrice">Price:</label>
+                        <input type="text" class="form-control" id="addItemPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemType">Type:</label>
+                        <select class="form-control" id="addItemType" required>
+                            <option>Book</option>
+                            <option>E-Book</option>
+                            <option>Audio Book</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="addItemStock">Stock:</label>
+                        <input type="number" class="form-control" id="addItemStock" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and Popper.js (Optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

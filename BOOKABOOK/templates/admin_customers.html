@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Customers List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .navbar-light {
+            background-color: #f8f9fa !important;
+        }
+        .table {
+            background-color: #FF0000; /* Red background */
+            color: #ffffff; /* White font color */
+            border-radius: 10px; /* Rounded corners */
+        }
+        .table th,
+        .table td {
+            border-color: #ffffff !important; /* White border color */
+        }
+        .btn-instagram {
+            background-color: #fd4444;
+            color: #ffffff;
+        }
+        .btn-instagram:hover {
+            background-color: #af1313;
+            color: #ffffff;
+        }
+        .modal-label {
+            color: #000000;
+        }
+
+        /* Custom CSS for table rows */
+        .table tbody tr {
+            background-color: #FF0000; /* Light red background */
+            color: #ffffff; /* White font color */
+        }
+
+        /* Bottom spacing for table rows */
+        .table tbody tr td {
+            padding-bottom: 10px; /* Adjust the spacing as needed */
+        }
+    </style>
+</head>
+<body>
+
+{% include 'admin_navbar.html' %}
+
+<div class="container mt-4">
+    <h2>Customers List</h2>
+	
+	
+	<form action="{{ url_for('searchCustomer') }}" method="POST" class="mb-3">
+    <!-- Search Bar -->
+    <div class="input-group mb-3">
+        <input name="search_text" type="text" class="form-control" placeholder="Search for customers" aria-label="Search for customers" aria-describedby="basic-addon2">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </div>
+	</form>
+
+
+	{%with messages = get_flashed_messages()%}
+	{%if messages%}
+	{%for message in messages%}
+	<p class="text-lg {% if 'no' in message | lower or 'failed' in message | lower or 'unable' in message | lower %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
+	{%endfor%}
+	{%endif%}
+	{%endwith%}
+	
+    <!-- Customers List -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Address</th>
+				<th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cust in customer | reverse %}
+                    <!-- Sample customer -->
+                    <tr>
+                        {% for val in cust %}
+						{% if not loop.last %}
+						<td>{{ val }}</td>
+						{% endif %}
+						{% endfor %}
+                        <td>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteCustomerModal_{{cust.0}}">Deactivate</button>
+                </td>
+				
+				<!-- Delete Customer Modal -->
+				<div class="modal fade" id="deleteCustomerModal_{{cust.0}}" tabindex="-1" role="dialog" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title modal-label" id="deleteCustomerModalLabel">Delete Customer</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p class="modal-label">Are you sure you want to delete {{cust.2}}?</p>
+								<a href="/delete-customer/{{cust.0}}" type="button" class="btn btn-danger">Yes</a>
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+							</div>
+						</div>
+					</div>
+				</div>
+            </tr>
+			{% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

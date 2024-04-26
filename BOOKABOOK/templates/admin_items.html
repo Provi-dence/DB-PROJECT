@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Items List</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<style>
+		body {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .navbar-light {
+            background-color: #f8f9fa !important;
+        }
+        .table {
+            background-color: #FF0000; /* Red background */
+            color: #ffffff; /* White font color */
+            border-radius: 10px; /* Rounded corners */
+        }
+        .table th,
+        .table td {
+            border-color: #ffffff !important; /* White border color */
+        }
+        .btn-instagram {
+            background-color: #fd4444;
+            color: #ffffff;
+        }
+        .btn-instagram:hover {
+            background-color: #af1313;
+            color: #ffffff;
+        }
+        .modal-label {
+            color: #000000;
+        }
+        /* Custom styles for the "Add Item" button */
+        .btn-add-item {
+            background-color: #FF0000 !important; /* Red background */
+            color: #ffffff;
+            border: 2px solid #FF0000 !important; /* Red border */
+        }
+        .btn-add-item:hover {
+            background-color: #c50707 !important; /* Dark red background on hover */
+        }
+	</style>
+</head>
+<body style="background-color: #ffffff; color: #000000;">
+
+{% include 'admin_navbar.html' %}
+
+<!-- Content -->
+<div class="container mt-4">
+    <h2>Items List</h2>
+
+	<form action="{{ url_for('searchItem') }}" method="POST" class="mb-3">
+    <!-- Search Bar -->
+    <div class="input-group mb-3">
+        <input name="search_text" type="text" class="form-control" placeholder="Search for items" aria-label="Search for items" aria-describedby="basic-addon2">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </div>
+	</form>
+
+    <!-- Add Item Button -->
+    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addItemModal">Add Item</button>
+	
+	<!-- Add Item Modal -->
+	<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<!-- Add Item Form -->
+					<form action="{{url_for('insertItem')}}", method="POST">
+						<div class="form-group">
+							<label for="addItemISBN">ISBN:</label>
+							<input name="isbn" type="text" class="form-control" id="addItemISBN" required>
+						</div>
+						<div class="form-group">
+							<label for="addItemTitle">Title:</label>
+							<input name="title" type="text" class="form-control" id="addItemTitle" required>
+						</div>
+						<div class="form-group">
+							<label for="addItemAuthor">Author:</label>
+							<input name="author" type="text" class="form-control" id="addItemAuthor" required>
+						</div>
+						<div class="form-group">
+							<label for="addItemGenre">Genre:</label>
+							<input name="genre" type="text" class="form-control" id="addItemGenre" required>
+						</div>
+						<div class="form-group">
+							<label for="addItemPrice">Price:</label>
+							<input name="price" type="text" class="form-control" id="addItemPrice" required>
+						</div>
+						<div class="form-group">
+							<label for="addItemType">Item Type:</label>
+							<select name="itype" class="form-control" id="addItemType" required>
+								<option value="Book">Book</option>
+								<option value="E Book">E-Book</option>
+								<option value="Audio Book">Audio Book</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="addItemStock">Stock:</label>
+							<input name="stocks" type="number" class="form-control" id="addItemStock" min="1" required>
+						</div>
+						<button type="submit" class="btn btn-primary">Add Item</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	{%with messages = get_flashed_messages()%}
+	{%if messages%}
+	{%for message in messages%}
+	<p class="text-lg {% if 'no' in message | lower or 'failed' in message | lower or 'unable' in message | lower %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
+	{%endfor%}
+	{%endif%}
+	{%endwith%}
+    <!-- Items List -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ISBN</th>
+                <th scope="col">Title</th>
+                <th scope="col">Author</th>
+                <th scope="col">Genre</th>
+                <th scope="col">Price</th>
+                <th scope="col">Type</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data | reverse %}
+                    <!-- Sample item -->
+                    <tr>
+					{% for val in item %}
+					{% if loop.index not in [1, loop.length, loop.length-1] %}
+					<td>
+						{% if loop.index == 6 %}
+						{% set i_price = item.5|float %}
+							{{ '%.2f'|format(i_price) }}
+						{% else %}
+						{{ val }}
+						{% endif %}
+					</td>
+					{% endif %}
+					{% endfor %}
+                        <td>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editItemModal_{{item.0}}">Edit</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteItemModal_{{item.0}}">Delete</button>
+                </td>
+				
+				<!-- Edit Item Modal -->
+				<div class="modal fade" id="editItemModal_{{item.0}}" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<!-- Edit Item Form -->
+								<form action="{{url_for('updateItem')}}" method="POST">
+									<div class="form-group">
+										<input type="hidden" name="id" value="{{item.0}}"></input>
+										<input type="hidden" name="isbn" value="{{item.1}}"></input>
+										<label for="editItemTitle">Title:</label>
+										<input name="title" type="text" class="form-control" id="editItemTitle" value="{{item.2}}" required>
+									</div>
+									<div class="form-group">
+										<label for="editItemAuthor">Author:</label>
+										<input name="author" type="text" class="form-control" id="editItemAuthor" value="{{item.3}}" required>
+									</div>
+									<div class="form-group">
+										<label for="editItemGenre">Genre:</label>
+										<input name="genre" type="text" class="form-control" id="editItemGenre" value="{{item.4}}" required>
+									</div>
+									<div class="form-group">
+										<label for="editItemPrice">Price:</label>
+										<input name="price" type="text" class="form-control" id="editItemPrice" value="{{item.5}}" required>
+									</div>
+									<div class="form-group">
+										<label name="itype" for="editItemType">Item Type:</label>
+												<select name="itype" class="form-control" id="editItemType" required>
+													{% if item.6 == 'Book' %}
+													<option value="Book" >Book</option>
+													<option value="E Book" >E-Book</option>
+													<option value="Audio Book">Audio Book</option>
+													{% endif %}
+													{% if item.6 == 'E Book' %}
+													<option value="E Book" >E-Book</option>
+													<option value="Book" >Book</option>
+													<option value="Audio Book">Audio Book</option>
+													{% endif %}
+													{% if item.6 == 'Audio Book' %}
+													<option value="Audio Book">Audio Book</option>
+													<option value="E Book" >E-Book</option>
+													<option value="Book" >Book</option>
+													{% endif %}
+												</select>
+									</div>
+									<div class="form-group">
+										<label for="editItemStock">Stock:</label>
+										<input name="stocks" type="number" class="form-control" id="editItemStock" min="0" value="{{item.7}}" required>
+									</div>
+									<button type="submit" class="btn btn-primary">Update</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Delete Item Modal -->
+				<div class="modal fade" id="deleteItemModal_{{item.0}}" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="deleteItemModalLabel">Delete Item</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p>Are you sure you want to delete this item?</p>
+								<a href="/delete-item/{{item.0}}" type="button" class="btn btn-danger">Yes</a>
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+							</div>
+						</div>
+					</div>
+				</div>
+            </tr>
+            <!-- Add more items here -->
+			{% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Bootstrap JS and Popper.js (Optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

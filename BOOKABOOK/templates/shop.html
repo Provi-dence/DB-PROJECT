@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shop</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body style="background-color: #ffffff; color: #000000;">
+
+{% include 'navbar.html' %}
+
+<!-- Content -->
+<div class="container mt-4">
+    <div class="row justify-content-center"> <!-- Centering the content -->
+        <div class="col-md-8">
+			<form action="{{ url_for('customer_search_item') }}" method="POST">
+            <!-- Search Bar -->
+            <div class="input-group mb-3 mx-auto"> <!-- Centering the search bar -->
+                <input name="search_text" type="text" class="form-control" placeholder="Search for items" aria-label="Search for items" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </div>
+			</form>
+			
+	{%with messages = get_flashed_messages()%}
+	{%if messages%}
+	{%for message in messages%}
+	<p class="text-lg {% if 'no' in message | lower or 'failed' in message | lower or 'unable' in message | lower %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
+	{%endfor%}
+	{%endif%}
+	{%endwith%}
+            
+            <!-- Items for Sale -->
+            <div class="row justify-content-center"> <!-- Centering the items list -->
+				{% for row in items %}
+                <div class="col-md-4 mb-4" data-toggle="modal" data-target="#addToCartModal_{{row.0}}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{row.2}}</h5>
+							<p class="card-text">By: {{row.3}}</p>
+                            <p class="card-text">Price: ${{row.5}}</p>
+                            <p class="card-text">Stock: {{row.7}}</p>
+                        </div>
+                    </div>
+                </div>
+				
+				<!-- Add to Cart Modal -->
+				<div class="modal fade" id="addToCartModal_{{row.0}}" tabindex="-1" role="dialog" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<p>Title: {{row.2}}</p>
+								<p>Author: {{row.3}}</p>
+								<p>Genre: {{row.4}}</p>
+								<p>Type: {{row.6}}</p>
+								<p>Stocks: {{row.7}}</p>
+								<p>Price: ${{row.5}}</p>
+								<form action="{{url_for('add_to_cart')}}" method="POST">
+									<div class="form-group">
+										<label for="quantity">Quantity:</label>
+										<input type="hidden" name="i_id" value="{{row.0}}">
+										<input type="hidden" name="c_id" value="{{user[0]}}">
+										<input type="number" name="qty" class="form-control" id="quantity" placeholder="Enter quantity" min="1" max="{{row.7}}" value="1" required>
+									</div>
+									<button type="submit" class="btn btn-primary">Add to Cart</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and Popper.js (Optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
