@@ -11,7 +11,7 @@ def db_connect()->object:
         host="127.0.0.1",
         user="root",
         password="",
-        database="buayadb"
+        database="bkbdb"
     )
 
 def getProcess(sql:str)->list:
@@ -196,3 +196,16 @@ def deletecartitem(io_id)->bool:
     sql = f"DELETE FROM itemsordered WHERE io_id = {io_id}"
     success = doProcess(sql)
     return success
+
+
+def get_total_revenue():
+    sql = """
+    SELECT ROUND(SUM(io.qty * i.price), 2) AS total_revenue
+    FROM ItemsOrdered io
+    JOIN Items i ON io.i_id = i.i_id;
+    """
+    result = getProcess(sql)
+    if result and result[0][0] is not None:
+        return result[0][0]
+    else:
+        return 0.0  # Return a default value if no revenue is found

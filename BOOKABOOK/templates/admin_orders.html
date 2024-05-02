@@ -27,7 +27,7 @@
     <table class="table table-light">
         <thead>
             <tr>
-                <th scope="col">Order ID</th>
+                <!--<th scope="col">Order ID</th>-->
                 <th scope="col">Customer Name</th>
                 <th scope="col">Order Date</th>
                 <th scope="col">Total Amount</th>
@@ -38,7 +38,7 @@
             {% for row in orders|reverse %}
             <!-- Sample order -->
             <tr data-toggle="modal" data-target="#orderDetailsModal_{{row.0}}">
-                <td>{{row.0}}</td>
+                <!--<td>{{row.0}}</td>-->
                 <td>{{row.1}}</td>
                 <td>{{row.2}}</td>
                 <td>${{row.4}}</td>

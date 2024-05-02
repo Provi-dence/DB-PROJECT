@@ -1,0 +1,404 @@
+-- SQLite
+CREATE DATABASE BKBDB
+GO
+
+USE BKBDB
+GO
+
+
+CREATE TABLE USERS (
+    USER_ID INT PRIMARY KEY NOT NULL,
+    USERNAME VARCHAR(30) NOT NULL,
+    PASSWORD VARCHAR(30) NOT NULL
+);
+
+
+CREATE TABLE USER_PROFILE (
+    USER_ID INT PRIMARY KEY NOT NULL,
+    USER_LNAME VARCHAR(30) NOT NULL,
+    USER_FNAME VARCHAR(30) NOT NULL,
+    USER_TYPE VARCHAR(30) NOT NULL,
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP,
+    STATUS TINYINT DEFAULT 0,
+    FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID)
+);
+
+
+CREATE TABLE BOOK (
+    BOOK_ID INT PRIMARY KEY NOT NULL,
+    BOOK_AUTHOR VARCHAR(30) NOT NULL,
+    BOOK_NAME VARCHAR(50) NOT NULL,
+    BOOK_IMAGE VARCHAR (MAX) NOT NULL,
+    QTY_ONHAND INT NOT NULL,
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP,
+    BOOK_TYPE VARCHAR(20) NOT NULL,
+    BOOK_PRICE MONEY NOT NULL
+);
+
+
+CREATE TABLE PAYMENT_METHOD (
+    PAYMENT_ID INT PRIMARY KEY NOT NULL,
+    PAYMENT_DESC VARCHAR(255) NOT NULL,
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE SHIPPED_ADDRESS (
+    SHIP_ADDRESS_ID INT PRIMARY KEY NOT NULL,
+    SHIPPED_ADDRESS VARCHAR(255) NOT NULL,
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+
+
+CREATE TABLE ORDERS (
+    ORDER_ID INT PRIMARY KEY NOT NULL,
+    ORDER_DATE DATETIME,
+    USER_ID INT,
+    PAYMENT_ID INT,
+    SHIP_ADDRESS_ID INT,
+    TOTAL_AMOUNT MONEY NOT NULL,
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID),
+    FOREIGN KEY (PAYMENT_ID) REFERENCES PAYMENT_METHOD(PAYMENT_ID),
+    FOREIGN KEY (SHIP_ADDRESS_ID) REFERENCES SHIPPED_ADDRESS(SHIP_ADDRESS_ID)
+);
+
+CREATE TABLE ORDER_DETAILS (
+    ORDER_DETAILS_ID INT PRIMARY KEY NOT NULL,
+    ORDER_ID INT,
+    BOOK_ID INT,
+    QTY_ORDER INT NOT NULL,
+    UNIT_PRICE MONEY NOT NULL,
+    LINE_TOTAL AS (QTY_ORDER * UNIT_PRICE),
+    DATE_CREATED DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ORDER_ID) REFERENCES [ORDERS] (ORDER_ID),
+    FOREIGN KEY (BOOK_ID) REFERENCES BOOK (BOOK_ID)
+);
+
+
+
+
+
+
+
+-- Insert data into USERS table
+INSERT INTO USERS (USER_ID, USERNAME, PASSWORD)
+VALUES
+(1, 'admin1', 'admin123'),
+(2, 'user2', 'password2'),
+(3, 'user3', 'password3'),
+(4, 'user4', 'password4'),
+(5, 'user5', 'password5'),
+(6, 'user6', 'password6'),
+(7, 'user7', 'password7'),
+(8, 'user8', 'password8'),
+(9, 'user9', 'password9'),
+(10, 'user10', 'password10'),
+(11, 'user11', 'password11'),
+(12, 'user12', 'password12'),
+(13, 'user13', 'password13'),
+(14, 'user14', 'password14'),
+(15, 'user15', 'password15'),
+(16, 'user16', 'password16'),
+(17, 'user17', 'password17'),
+(18, 'user18', 'password18'),
+(19, 'user19', 'password19'),
+(20, 'user20', 'password20');
+
+-- Insert data into USER_PROFILE table
+INSERT INTO USER_PROFILE (USER_ID, USER_LNAME, USER_FNAME, USER_TYPE, STATUS) VALUES
+(1, 'Lname1', 'Fname1', 'Admin', 1),
+(2, 'Lname2', 'Fname2', 'Customer', 1),
+(3, 'Lname3', 'Fname3', 'Customer', 1),
+(4, 'Lname4', 'Fname4', 'Customer', 1),
+(5, 'Lname5', 'Fname5', 'Customer', 1),
+(6, 'Lname6', 'Fname6', 'Customer', 1),
+(7, 'Lname7', 'Fname7', 'Customer', 1),
+(8, 'Lname8', 'Fname8', 'Customer', 1),
+(9, 'Lname9', 'Fname9', 'Customer', 1),
+(10, 'Lname10', 'Fname10', 'Customer', 1),
+(11, 'Lname11', 'Fname11', 'Customer', 1),
+(12, 'Lname12', 'Fname12', 'Customer', 1),
+(13, 'Lname13', 'Fname13', 'Customer', 1),
+(14, 'Lname14', 'Fname14', 'Customer', 1),
+(15, 'Lname15', 'Fname15', 'Customer', 1),
+(16, 'Lname16', 'Fname16', 'Customer', 1),
+(17, 'Lname17', 'Fname17', 'Customer', 1),
+(18, 'Lname18', 'Fname18', 'Customer', 1),
+(19, 'Lname19', 'Fname19', 'Customer', 1),
+(20, 'Lname20', 'Fname20', 'Customer', 1);
+
+-- Insert data into BOOK table
+INSERT INTO BOOK (BOOK_ID, BOOK_AUTHOR, BOOK_NAME, QTY_ONHAND, BOOK_TYPE, BOOK_PRICE) VALUES
+(1, 'Author1', 'Book1', 10, 'Fiction', 10.00),
+(2, 'Author2', 'Book2', 15, 'Non-Fiction', 15.00),
+(3, 'Author3', 'Book3', 20, 'Fiction', 20.00),
+(4, 'Author4', 'Book4', 25, 'Non-Fiction', 25.00),
+(5, 'Author5', 'Book5', 30, 'Fiction', 30.00),
+(6, 'Author6', 'Book6', 35, 'Non-Fiction', 35.00),
+(7, 'Author7', 'Book7', 40, 'Fiction', 40.00),
+(8, 'Author8', 'Book8', 45, 'Non-Fiction', 45.00),
+(9, 'Author9', 'Book9', 50, 'Fiction', 50.00),
+(10, 'Author10', 'Book10', 55, 'Non-Fiction', 55.00),
+(11, 'Author11', 'Book11', 60, 'Fiction', 60.00),
+(12, 'Author12', 'Book12', 65, 'Non-Fiction', 65.00),
+(13, 'Author13', 'Book13', 70, 'Fiction', 70.00),
+(14, 'Author14', 'Book14', 75, 'Non-Fiction', 75.00),
+(15, 'Author15', 'Book15', 80, 'Fiction', 80.00),
+(16, 'Author16', 'Book16', 85, 'Non-Fiction', 85.00),
+(17, 'Author17', 'Book17', 90, 'Fiction', 90.00),
+(18, 'Author18', 'Book18', 95, 'Non-Fiction', 95.00),
+(19, 'Author19', 'Book19', 100, 'Fiction', 100.00),
+(20, 'Author20', 'Book20', 105, 'Non-Fiction', 105.00);
+
+-- Insert data into PAYMENT_METHOD table
+INSERT INTO PAYMENT_METHOD (PAYMENT_ID, PAYMENT_DESC) VALUES
+(1, 'Credit Card'),
+(2, 'Debit Card'),
+(3, 'PayPal'),
+(4, 'Bank Transfer');
+
+-- Insert data into SHIPPED_ADDRESS table
+INSERT INTO SHIPPED_ADDRESS (SHIP_ADDRESS_ID, SHIPPED_ADDRESS) VALUES
+(1, 'Address1'),
+(2, 'Address2'),
+(3, 'Address3'),
+(4, 'Address4'),
+(5, 'Address5');
+
+-- Insert data into ORDERS table
+INSERT INTO ORDERS (ORDER_ID, ORDER_DATE, USER_ID, PAYMENT_ID, SHIP_ADDRESS_ID, TOTAL_AMOUNT) VALUES
+(1, '2022-01-01 10:00:00', 1, 1, 1, 100.00),
+(2, '2022-01-02 11:00:00', 2, 2, 2, 200.00),
+(3, '2022-01-03 12:00:00', 3, 3, 3, 300.00),
+(4, '2022-01-04 13:00:00', 4, 4, 4, 400.00),
+(5, '2022-01-05 14:00:00', 5, 1, 1, 500.00),
+(6, '2022-01-06 15:00:00', 6, 2, 2, 600.00),
+(7, '2022-01-07 16:00:00', 7, 3, 3, 700.00),
+(8, '2022-01-08 17:00:00', 8, 4, 4, 800.00),
+(9, '2022-01-09 18:00:00', 9, 1, 1, 900.00),
+(10, '2022-01-10 19:00:00', 10, 2, 2, 1000.00);
+
+-- Insert data into ORDER_DETAILS table
+INSERT INTO ORDER_DETAILS (ORDER_DETAILS_ID, ORDER_ID, BOOK_ID, QTY_ORDER, UNIT_PRICE) VALUES
+(1, 1, 1, 10, 10.00),
+(2, 1, 2, 10, 15.00),
+(3, 2, 3, 10, 20.00),
+(4, 2, 4, 10, 25.00),
+(5, 3, 5, 10, 30.00),
+(6, 3, 6, 10, 35.00),
+(7, 4, 7, 10, 40.00),
+(8, 4, 8, 10, 45.00),
+(9, 5, 9, 10, 50.00),
+(10, 5, 10, 10, 55.00),
+(11, 6, 11, 10, 60.00),
+(12, 6, 12, 10, 65.00),
+(13, 7, 13, 10, 70.00),
+(14, 7, 14, 10, 75.00),
+(15, 8, 15, 10, 80.00),
+(16, 8, 16, 10, 85.00),
+(17, 9, 17, 10, 90.00),
+(18, 9, 18, 10, 95.00),
+(19, 10, 19, 10, 100.00),
+(20, 10, 20, 10, 105.00);
+
+
+
+--SP
+
+/*
+SP TO MAKE 
+Books
+- AddBook /
+- UpdateBook /
+- DeleteBook
+- SearchBook
+
+Orders
+- AddOrder
+- RemoveOrder
+
+Other
+  - GetOrderDetailsByOrderId
+  - PaymentMethod
+  - GetShippedAddressById
+
+*/
+
+
+-- Add book
+CREATE PROCEDURE AddBook
+    @BOOK_ID INT,
+    @BOOK_AUTHOR VARCHAR(255),
+    @BOOK_NAME VARCHAR(255),
+    @QTY_ONHAND INT,
+    @BOOK_TYPE VARCHAR(255),
+    @BOOK_PRICE DECIMAL(10,2)
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM BOOK WHERE BOOK_ID = @BOOK_ID)
+    BEGIN
+        INSERT INTO BOOK (BOOK_ID, BOOK_AUTHOR, BOOK_NAME, QTY_ONHAND, BOOK_TYPE, BOOK_PRICE)
+        VALUES (@BOOK_ID, @BOOK_AUTHOR, @BOOK_NAME, @QTY_ONHAND, @BOOK_TYPE, @BOOK_PRICE)
+    END
+    ELSE
+    BEGIN
+        PRINT 'Book ID already exists.'
+    END
+END
+
+
+-- EXEC
+DECLARE	@return_value int
+
+EXEC	@return_value = [dbo].[AddBook]
+		@BOOK_ID = 21,
+		@BOOK_AUTHOR = N'ONE',
+		@BOOK_NAME = N'OPM',
+		@QTY_ONHAND = 53,
+		@BOOK_TYPE = N'CUSTOMER',
+		@BOOK_PRICE = 456
+
+SELECT	'Return Value' = @return_value
+
+GO
+
+
+-- UPDATE BOOK
+CREATE PROCEDURE UpdateBook
+    @BOOK_ID INT,
+    @BOOK_AUTHOR VARCHAR(255) = NULL,
+    @BOOK_NAME VARCHAR(255) = NULL,
+    @QTY_ONHAND INT = NULL,
+    @BOOK_TYPE VARCHAR(255) = NULL,
+    @BOOK_PRICE DECIMAL(10,2) = NULL
+AS
+BEGIN
+    UPDATE BOOK
+    SET BOOK_AUTHOR = COALESCE(@BOOK_AUTHOR, BOOK_AUTHOR),
+        BOOK_NAME = COALESCE(@BOOK_NAME, BOOK_NAME),
+        QTY_ONHAND = COALESCE(@QTY_ONHAND, QTY_ONHAND),
+        BOOK_TYPE = COALESCE(@BOOK_TYPE, BOOK_TYPE),
+        BOOK_PRICE = COALESCE(@BOOK_PRICE, BOOK_PRICE)
+    WHERE BOOK_ID = @BOOK_ID
+END
+
+-- EXEC
+
+DECLARE	@return_value int
+
+EXEC	@return_value = [dbo].[UpdateBook]
+		@BOOK_ID = 3,
+		@BOOK_AUTHOR = N'JUNDREL'
+
+SELECT	'Return Value' = @return_value
+
+GO
+
+SELECT * FROM BOOK
+
+-- EXEC
+
+
+STORED PROCEDURE
+
+CREATE DATABASE TEST
+GO
+
+USE [TEST]
+
+-- SP to register a new account
+CREATE PROCEDURE RegisterAccount
+    @UserId INT,
+    @Username VARCHAR(255),
+    @Password VARCHAR(255)
+AS
+BEGIN
+    INSERT INTO USERS (USER_ID, USERNAME, PASSWORD)
+    VALUES (@UserId, @Username, @Password)
+END
+
+
+-- SP to login to an account
+CREATE PROCEDURE LoginAccount
+    @Username VARCHAR(255),
+    @Password VARCHAR(255)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM USERS WHERE USERNAME = @Username AND PASSWORD = @Password)
+        SELECT 'Login successful' AS Message
+    ELSE
+        SELECT 'Invalid username or password' AS Message
+END
+
+-- SP to deactivate an account
+CREATE PROCEDURE DeactivateAccount
+    @UserId INT
+AS
+BEGIN
+    UPDATE USERS
+    SET IsDeactivate = 1
+    WHERE USER_ID = @UserId;
+END
+
+ALTER TABLE USERS
+ADD IsDeactivate BIT DEFAULT 0;
+
+
+-- SP to update an account
+CREATE PROCEDURE UpdateAccount
+    @UserId INT,
+    @NewUsername VARCHAR(255),
+    @NewPassword VARCHAR(255)
+AS
+BEGIN
+    UPDATE USERS
+    SET USERNAME = @NewUsername, PASSWORD = @NewPassword
+    WHERE USER_ID = @UserId;
+END
+
+
+-- SP to search for accounts
+CREATE PROCEDURE SearchAccount
+    @Username VARCHAR(255)
+AS
+BEGIN
+    SELECT *
+    FROM USERS
+    WHERE USERNAME = @Username;
+END
+
+--OTHERS
+-- SP to get total books sold
+CREATE PROCEDURE GetTotalBooksSold
+AS
+BEGIN
+    SELECT SUM(Quantity) AS TotalBooksSold FROM OrderDetails
+END
+
+-- SP to get total orders
+CREATE PROCEDURE GetTotalOrders
+AS
+BEGIN
+    SELECT COUNT(*) AS TotalOrders FROM Orders
+END
+
+
+-- SP to get total customers
+CREATE PROCEDURE GetTotalCustomers
+AS
+BEGIN
+    SELECT COUNT(UserId) AS TotalCustomers FROM [User]
+END
+
+
+
+
+
+
+
+

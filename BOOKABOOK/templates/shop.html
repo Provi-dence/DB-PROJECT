@@ -6,14 +6,61 @@
     <title>Online Shop</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+	<style>
+		/* Custom CSS for hover animation and color change */
+		.card {
+			margin-bottom: 20px;
+			border: 1px solid #ddd;
+			border-radius: 10px;
+			transition: transform 0.3s ease, background-color 0.3s ease;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		.card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+		}
+
+		.card-colorful:hover {
+			background-color: #ffc107; /* Change to your desired color */
+			border-color: #ffc107; /* Change to match the background color for consistency */
+			color: #fff; /* Change to a suitable text color for visibility */
+		}
+
+	</style>
 </head>
 <body style="background-color: #ffffff; color: #000000;">
 
 {% include 'navbar.html' %}
 
+<div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2500"> <!-- Change interval to 5000 milliseconds (5 seconds) -->
+	<div class="carousel-inner">
+	  <div class="carousel-item active">
+		<img src="../static/images/c1.png" class="d-block w-100" alt="collector">
+	  </div>
+	  <div class="carousel-item">
+		<img src="../static/images/c2.png" class="d-block w-100" alt="bookabook">
+	  </div>
+	  <div class="carousel-item">
+		<img src="../static/images/c3.png" class="d-block w-100" alt="qoute">
+	  </div>
+	</div>
+</div>
 <!-- Content -->
 <div class="container mt-4">
-    <div class="row justify-content-center"> <!-- Centering the content -->
+
+
+	<div class="alert alert-success" role="alert">
+		<h4 class="alert-heading">Welcome to Bookabook Online Bookstore!</h4>
+		<p>Thank you for choosing Bookabook for all your reading needs. We are thrilled to have you join our community of book lovers.</p>
+		<hr>
+		<p class="mb-0">Feel free to explore our vast collection of books and enjoy a seamless shopping experience. Happy reading!</p>
+	</div>
+		
+
+    <div class="row justify-content-center">
+		<!-- Centering the content -->
         <div class="col-md-8">
 			<form action="{{ url_for('customer_search_item') }}" method="POST">
             <!-- Search Bar -->
@@ -81,12 +128,31 @@
             </div>
         </div>
     </div>
+
+	
+	<div class="card text-center mb-4">
+		<div class="card-header">
+		  Featured
+		</div>
+		<div class="card-body">
+		  <h5 class="card-title">Special title treatment</h5>
+		  <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+		  <a href="#" class="btn btn-primary">Go somewhere</a>
+		</div>
+		<div class="card-footer text-body-secondary">
+		  2 days ago
+		</div>
+	</div>
+
+
 </div>
+
+{% include 'footer.html' %}
 
 <!-- Bootstrap JS and Popper.js (Optional) -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-</body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/v

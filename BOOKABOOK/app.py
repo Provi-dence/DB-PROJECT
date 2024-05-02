@@ -37,12 +37,17 @@ def index():
             total_items = countall('items')
             total_orders = countall('orders')
             recent_orders = get_recent_orders()
+
             print("Recent Orders")
             print(recent_orders)
+
+            # Fetch total revenue using the helper function
+            ttl_revenue = get_total_revenue()
+
             recent_customer = get_recent('customer', 'c_id')
             recent_items = get_recent('items', 'i_id')
             #print(recent_items)
-            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord = total_orders, ttl_cust = total_customer, ttl_item=total_items, rec_ord = recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'])
+            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders, ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'], ttl_revenue=ttl_revenue)
         else:
             if session['user'][4] != 0:
                 data = []
@@ -50,7 +55,7 @@ def index():
                     data = getall('items', page = 1)
                 except Exception as e:
                     flash("NO ITEMS AVAILBLE")
-                return render_template("shop.html", title="Crocs BookHub", search=False, items=data, user=session['user'])
+                return render_template("shop.html", title="Bookabook", search=False, items=data, user=session['user'])
             else:
                 return render_template("error.html", message="Your account is deactivated please contact admin support!")
             
@@ -80,7 +85,7 @@ def index():
                         data = getall('items', page = 1)
                     except Exception as e:
                         flash("NO ITEMS AVAILBLE")
-                    return render_template("shop.html", title="Crocs BookHub", search=False, items=data, user=session['user'])
+                    return render_template("shop.html", title="Bookabook", search=False, items=data, user=session['user'])
                 else:
                     return render_template("error.html", message="Your account is deactivated please contact admin support!")
         else:
@@ -208,7 +213,7 @@ def customer_search_item():
                     return redirect(url_for('index'))
                 else:
                     flash(f"{len(data)} items matches with {search_text}")
-                    return render_template("shop.html", title="Crocs BookHub", search=True, items=data, user=session['user'])
+                    return render_template("shop.html", title="Bookabook", search=True, items=data, user=session['user'])
     return redirect(url_for('index'))
     
 @app.route('/place-order', methods=['POST'])
@@ -307,6 +312,7 @@ def create_account():
         return render_template('register.html')
 
     
+    
 #####################
 #   CUSTOMER CODE   #
 #####################
@@ -361,6 +367,7 @@ def updateCustomer():
             return redirect(url_for('customer'))
     return render_template('login.html')
     
+
 @app.route('/delete-customer/<string:id_data>', methods = ['POST', 'GET'])
 def deleteCustomer(id_data):
     if 'user' in session:
@@ -400,6 +407,7 @@ def searchCustomer():
                     return render_template("admin_customers.html", title="Customers List", user=session['user'], customer=data, header=customerHeader)
     return render_template('login.html')
     
+
 ######################
 #     ITEMS CODE     #
 ######################
