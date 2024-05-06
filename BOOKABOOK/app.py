@@ -1,21 +1,22 @@
-from flask import Flask,request,render_template,url_for,redirect,flash,g,session
+from flask import Flask, request, render_template, url_for, redirect, flash, g, session
+from flask import send_from_directory
 from dbhelper import *
 from datetime import datetime
 import math
 from werkzeug.utils import secure_filename
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.urandom(24)
 
 # Configure the upload folder
-app.config['UPLOAD_FOLDER'] = 'static/images/product_img'
+app.config['UPLOAD_FOLDER'] = 'static/images/upload_img'
 
 # Optionally, you can set a maximum file size for uploads (in bytes)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 
 customerHeader = ['id','name','email','address','actions']
-itemHeader = ['isbn','title','author', 'genre', 'price', 'type', 'quantity', 'actions'] 
+itemHeader = ['isbn','title','author', 'genre', 'price', 'type', 'image', 'quantity', 'actions'] 
 
 @app.after_request
 def add_header(response):
@@ -411,22 +412,35 @@ def searchCustomer():
 ######################
 #     ITEMS CODE     #
 ######################
+
+# Function to fetch items data
 @app.route('/items')
 def items():
     if 'user' in session:
         if session['user'][3] == 'admin':
-            data = []
             try:
                 data = getall('items', page=0)
-                print(data)
+                for item in data:
+                    item = list(item)
+                    # Replace backslashes in image path with forward slashes
+                    item[-1] = url_for('static', filename=item[-1].replace("\\", "/"))
             except Exception as e:
-                return redirect(url_for('items'))
+                flash("Error fetching items data!")
+                return redirect(url_for('index'))
             if len(data) == 0:
                 flash("Items list is empty!")
             return render_template("admin_items.html", data=data, title="Items List", user=session['user'], header=itemHeader)
     return redirect(url_for('index'))
 
-@app.route('/insert-item', methods = ['POST'])
+
+@app.route('/display/<filename>')
+def display_image(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+
+# Function to insert a new item
+@app.route('/insert-item', methods=['POST'])
 def insertItem():
     if 'user' in session:
         if request.method == "POST":
@@ -438,13 +452,42 @@ def insertItem():
             itype = request.form['itype']
             stock = request.form['stocks']
             
-            success = addrecord('items',isbn=isbn, title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock, status=1, img="none")
-            flash("Item added successfully!") if success else flash("Failed to add item ISBN must be unique!")
+            # Handle file upload
+            if 'img' in request.files:
+                file = request.files['img']
+                if file.filename != '':
+                    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                        os.makedirs(app.config['UPLOAD_FOLDER'])
+
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_path)
+
+                    # Set the correct image path for the item
+                    img_path = file_path.replace("\\", "/")  # Replace backslashes in image path with forward slashes
+                    print("Image path:", img_path)  # Debugging output
+                else:
+                    img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image uploaded
+            else:
+                img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image field in the form
+
+            print("ISBN to be added:", isbn)  # Debugging output
+            
+            success = addrecord('items', isbn=isbn, title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock, status=1, img=img_path)
+            
+            print("Addrecord success:", success)  # Debugging output
+            
+            if success:
+                flash("Item added successfully!")
+            else:
+                flash("Failed to add item. ISBN must be unique!")
+            
             totalpages = calculate_total_pages(countall('items'))
             return redirect(url_for('items'))
     return render_template('login.html')
-    
-@app.route('/update-item', methods = ['POST'])
+
+# Function to update an existing item
+@app.route('/update-item', methods=['POST'])
 def updateItem():
     if 'user' in session:
         if request.method == 'POST':
@@ -457,12 +500,33 @@ def updateItem():
             itype = request.form['itype']
             stock = request.form['stocks']
             
-            success = updaterecord('items',i_id=id_data, isbn=isbn.title(), title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock)
-            flash("Item updated successfully!") if success else flash("No changes have been made!")
+            # Handle file upload
+            if 'img' in request.files:
+                file = request.files['img']
+                if file.filename != '':
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_path)
+                    img_path = file_path.replace("\\", "/")  # Replace backslashes in image path with forward slashes
+                else:
+                    img_path = None  # No new image uploaded
+                    flash('No new image uploaded')
+            else:
+                img_path = None  # No image field in the form
+
+            # Add record_id to updaterecord call
+            success = updaterecord('items', record_id=id_data, isbn=isbn.title(), title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock, img=img_path or "/static/images/default_img/book.png")
+
+            if success:
+                flash("Item updated successfully!")
+            else:
+                flash("No changes have been made!")
+            
             return redirect(url_for('items'))
     return render_template('login.html')
-    
-@app.route('/delete-item/<string:id_data>', methods = ['POST', 'GET'])
+
+# Function to delete an item
+@app.route('/delete-item/<string:id_data>', methods=['POST', 'GET'])
 def deleteItem(id_data):
     if 'user' in session:
         orders = get_all_orders()
@@ -479,24 +543,38 @@ def deleteItem(id_data):
             flash("Item deleted successfully!") if success else flash("Failed to delete item!")
         return redirect(url_for('items'))
     return render_template('login.html')
-    
+
+# Function to view an image
+"""
+@app.route('/view-image', methods=['GET'])
+def view_image():
+    image_path = request.args.get('img_path')
+    # Replace double backslashes with forward slashes
+    image_path = image_path.replace('\\', '/')
+    print("Received image path:", image_path)  # Debugging output
+    return render_template('view_image.html', image_path=image_path) 
+"""
+
+
+# Function to search for an item
 @app.route('/search-item', methods=['POST'])
 def searchItem():
     if 'user' in session:
         if session['user'][3] == 'admin':
             search_text = request.form.get('search_text')  # Get the search text from the form
-            if search_text == "":
+            if not search_text:
                 flash("Please type something to search!")
                 return redirect(url_for('items'))
             else:
-                data = getrecord('items', isbn=search_text, title=search_text, author=search_text, price=search_text, i_type=search_text, genre=search_text, stock=search_text)
-                if len(data) == 0:
+                data = getrecord('items', search_text=search_text)
+                if not data:
                     flash(f"No record matches with {search_text}")
                     return redirect(url_for('items'))
                 else:
-                    flash(f"No record matches with {search_text}") if len(data)==0 else flash(f"{len(data)} record matches")
+                    flash(f"{len(data)} record matches")
                     return render_template("admin_items.html", user=session['user'], data=data, page=1, totalpages=1, prev_page=None, next_page=None, title="Items List", header=itemHeader)
     return render_template('login.html')
+
 
 ######################
 #     ORDERS CODE     #
@@ -559,6 +637,10 @@ def updateOrderStatus():
                 return redirect(url_for('orders_page'))
     return redirect(url_for('index'))
     
+
+
+# Diri dapit
+
 
 if __name__ == "__main__":
 	app.run(debug=True, host='0.0.0.0', port=5000)

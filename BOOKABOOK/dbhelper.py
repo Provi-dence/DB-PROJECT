@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from sqlite3 import IntegrityError
 
 database: str = "bookstoredb.db"
@@ -105,25 +106,18 @@ def gettotalprice(c_id)->list:
     #print(f"sql={sql}")
     return getProcess(sql)
 	
-def getrecord(table:str,**kwargs)->list:
-    params = list(kwargs.items())
-    fields = []
-    for index, flds in enumerate(params):
-        flds = list(params[index])
-        if table == 'items':
-            fields.append(f"{flds[0]} LIKE '{flds[1]}%'") if flds[0] != 'i_type' else fields.append(f"{flds[0]} LIKE '{flds[1]}%'")
-        elif table == 'users':
-            fields.append(f"{flds[0]} = '{flds[1]}'")
-        else:
-            fields.append(f"{flds[0]} LIKE '%{flds[1]}%'")
-    if table == 'users':
-        condition = " and ".join(fields)
-        sql = f"SELECT * FROM {table} WHERE {condition}"
-    else:
-        condition = " or ".join(fields)
-        sql = f"SELECT * FROM {table} WHERE ({condition}) and status=1"
-    print(f"sql={sql}")
+# dbhelper.py
+
+def getrecord(table:str, **kwargs) -> list:
+    search_conditions = []
+    for key, value in kwargs.items():
+        if value:
+            search_conditions.append(f"{key} LIKE '%{value}%'")
+
+    condition = " OR ".join(search_conditions)
+    sql = f"SELECT * FROM {table} WHERE ({condition}) AND status = 1"
     return getProcess(sql)
+
     
 def getitems(table:str,**kwargs)->list:
     params = list(kwargs.items())
@@ -150,36 +144,59 @@ def doProcess(sql)->bool:
             print(f"ERROR: {e}")
         return False
     return True if cursor.rowcount>0 else False
-	
-def addrecord(table: str, **kwargs) -> bool:
-    flds = list(kwargs.keys())
-    vals = [str(val) for val in kwargs.values()]
-    fld = ",".join(flds)
-    val = "','".join(vals)
-    sql = f"INSERT INTO {table}({fld}) values('{val}')"
-    print(sql)
-    success = doProcess(sql)
-    return success
-        
-def updaterecord(table, **kwargs) -> bool:
-    flds = list(kwargs.keys())
-    vals = list(kwargs.values())
-    fld = []
+
+
+# Updated adding image path
+def addrecord(table, **kwargs):
+    db = connect()
+    cursor = db.cursor()
+    columns = ', '.join(kwargs.keys())
+    placeholders = ', '.join(['?'] * len(kwargs))
+    sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+    values = tuple(kwargs.values())
     
-    for i in range(1, len(flds)):
-        if vals[i] != '':
-            # Escape single quotes in field values
-            field_value = vals[i].replace("'", "''")
-            fld.append(f"{flds[i]}='{field_value}'")
-    print(fld)
-    if len(fld) == 0:
+    try:
+        cursor.execute(sql, values)
+        print(f"SQL: {sql} | Values: {values}")
+        db.commit()
+        return True
+    except IntegrityError as e:
+        if "Duplicate entry" in str(e) and "for key 'idno'" in str(e):
+            print("ERROR: IDNO already exists!")
+        else:
+            print(f"ERROR: {e}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()
+
+
+        
+def updaterecord(table, record_id, **kwargs) -> bool:
+    if not kwargs:
         print("No changes have been made!")
         return False
-    else:
-        params = ",".join(fld)
-        sql = f"UPDATE {table} SET {params} WHERE {flds[0]}='{vals[0]}'"
-        print(sql)
-        return doProcess(sql)
+
+    set_fields = []
+    for key, value in kwargs.items():
+        if value is not None and value != '':
+            # Escape single quotes in field values
+            field_value = value.replace("'", "''")
+            set_fields.append(f"{key}='{field_value}'")
+
+    if 'img' in kwargs and kwargs['img'] is not None:
+         set_fields.append(f"img='{kwargs['img']}'")
+
+    if not set_fields:
+        print("No changes have been made!")
+        return False
+
+    set_clause = ", ".join(set_fields)
+    sql = f"UPDATE {table} SET {set_clause} WHERE i_id='{record_id}'"  # Assuming 'i_id' is the primary key
+    return doProcess(sql)
+
+
 
 	
 def deleterecord(table,**kwargs)->bool:

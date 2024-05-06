@@ -79,7 +79,7 @@
 				</div>
 				<div class="modal-body">
 					<!-- Add Item Form -->
-					<form action="{{url_for('insertItem')}}" method="POST">
+					<form action="{{ url_for('insertItem') }}" method="POST" enctype="multipart/form-data">
 						<div class="form-group">
 							<label for="addItemISBN">ISBN:</label>
 							<input name="isbn" type="text" class="form-control" id="addItemISBN" required>
@@ -112,6 +112,10 @@
 							<label for="addItemStock">Stock:</label>
 							<input name="stocks" type="number" class="form-control" id="addItemStock" min="1" required>
 						</div>
+						<div class="form-group">
+							<label for="addItemImage">Image:</label>
+							<input name="img" type="file" class="form-control-file" id="addItemImage" accept="image/*">
+						</div>
 						<button type="submit" class="btn btn-primary">Add Item</button>
 					</form>
 				</div>
@@ -137,6 +141,7 @@
                 <th scope="col">Price</th>
                 <th scope="col">Type</th>
                 <th scope="col">Stock</th>
+				<th scope="col">Image</th>
                 <th scope="col">Actions</th>
             </tr>
         </thead>
@@ -155,11 +160,33 @@
 				</td>
 				{% endif %}
 				{% endfor %}
+				<!-- New Image Column -->
+				<td>
+					<button type="button" class="btn btn-primary view-image-btn" data-toggle="modal" data-target="#viewImageModal_{{ item.0 }}" data-img="{{ item[8] }}">View Image</button>
+				</td>
                 <td>
                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editItemModal_{{item.0}}">Edit</button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteItemModal_{{item.0}}">Delete</button>
                 </td>
             </tr>
+
+			<!-- View Image Modal -->   
+			<div class="modal fade" id="viewImageModal_{{ item.0 }}" tabindex="-1" role="dialog" aria-labelledby="viewImageModalLabel_{{ item.0 }}" aria-hidden="true">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="viewImageModalLabel_{{ item.0 }}">View Image</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<img src="" alt="Item Image" id="itemImage_{{ item.0 }}" width="100">
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- Edit Item Modal -->
 			<div class="modal fade" id="editItemModal_{{item.0}}" tabindex="-1" role="dialog" aria-labelledby="editItemModalLabel" aria-hidden="true">
 				<div class="modal-dialog" role="document">
@@ -172,7 +199,7 @@
 						</div>
 						<div class="modal-body">
 							<!-- Edit Item Form -->
-							<form action="{{url_for('updateItem')}}" method="POST">
+							<form action="{{url_for('updateItem')}}" method="POST" enctype="multipart/form-data">
 								<div class="form-group">
 									<input type="hidden" name="id" value="{{item.0}}"></input>
 									<input type="hidden" name="isbn" value="{{item.1}}"></input>
@@ -215,6 +242,10 @@
 									<label for="editItemStock">Stock:</label>
 									<input name="stocks" type="number" class="form-control" id="editItemStock" min="0" value="{{item.7}}" required>
 								</div>
+								<div class="form-group">
+									<label for="editItemImage">Image:</label>
+									<input name="img" type="file" class="form-control-file" id="editItemImage" accept="image/*">
+								</div>																							
 								<button type="submit" class="btn btn-primary">Update</button>
 							</form>
 						</div>
@@ -245,6 +276,26 @@
     </table>
 </div>
 
+<!-- JavaScript -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let viewImageBtns = document.querySelectorAll(".view-image-btn");
+
+        viewImageBtns.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                let modalId = this.getAttribute("data-target");
+                let imgPath = this.getAttribute("data-img");
+                let modalImg = document.querySelector(modalId + " img");
+                modalImg.src = imgPath;
+            });
+        });
+    });
+</script>
+
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Bootstrap JS and Popper.js (Optional) -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
