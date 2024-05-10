@@ -118,7 +118,8 @@ def getrecord(table:str, **kwargs) -> list:
     sql = f"SELECT * FROM {table} WHERE ({condition}) AND status = 1"
     return getProcess(sql)
 
-    
+
+#=========================JUNDREL ALONZO===========================#   
 def getitems(table:str,**kwargs)->list:
     params = list(kwargs.items())
     fields = []
@@ -172,7 +173,7 @@ def addrecord(table, **kwargs):
         db.close()
 
 
-        
+  
 def updaterecord(table, record_id, **kwargs) -> bool:
     if not kwargs:
         print("No changes have been made!")
@@ -195,7 +196,7 @@ def updaterecord(table, record_id, **kwargs) -> bool:
     set_clause = ", ".join(set_fields)
     sql = f"UPDATE {table} SET {set_clause} WHERE i_id='{record_id}'"  # Assuming 'i_id' is the primary key
     return doProcess(sql)
-
+#==================================================================#
 
 
 	
@@ -214,7 +215,7 @@ def deletecartitem(io_id)->bool:
     success = doProcess(sql)
     return success
 
-
+#=========================JUNDREL ALONZO===========================#
 def get_total_revenue():
     sql = """
     SELECT ROUND(SUM(io.qty * i.price), 2) AS total_revenue
@@ -225,4 +226,18 @@ def get_total_revenue():
     if result and result[0][0] is not None:
         return result[0][0]
     else:
-        return 0.0  # Return a default value if no revenue is found
+        return 0.0  # Return a default value if no revenue is 
+    
+
+# Assume you have a function to fetch items from the database
+def get_items():
+    # Query to fetch items with image_path
+    sql = "SELECT i_id, title, author, price, stock, image_path FROM items WHERE status = 1"
+    items = getProcess(sql)
+
+    # Convert image_path to string if it's not already
+    for item in items:
+        item['image_path'] = str(item['image_path'])
+
+    return items
+#==================================================================#

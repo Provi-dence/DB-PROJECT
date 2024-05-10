@@ -437,7 +437,28 @@ def items():
 def display_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Function to handle file upload and return the file path
+def handle_file_upload(request):
+    if 'img' in request.files:
+        file = request.files['img']
+        if file.filename != '':
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.makedirs(app.config['UPLOAD_FOLDER'])
 
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+            # Check if the file already exists
+            if os.path.isfile(file_path):
+                print("File already exists. Reusing existing file.")
+            else:
+                file.save(file_path)
+                print("File saved to:", file_path)  # Debugging output
+
+            # Set the correct image path for the item
+            img_path = file_path.replace("\\", "/")  # Replace backslashes in image path with forward slashes
+            return img_path
+    return "/static/images/default_img.png"  # Return default image path if no file uploaded or file field not in form
 
 # Function to insert a new item
 @app.route('/insert-item', methods=['POST'])
@@ -452,24 +473,9 @@ def insertItem():
             itype = request.form['itype']
             stock = request.form['stocks']
             
-            # Handle file upload
-            if 'img' in request.files:
-                file = request.files['img']
-                if file.filename != '':
-                    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-                        os.makedirs(app.config['UPLOAD_FOLDER'])
-
-                    filename = secure_filename(file.filename)
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(file_path)
-
-                    # Set the correct image path for the item
-                    img_path = file_path.replace("\\", "/")  # Replace backslashes in image path with forward slashes
-                    print("Image path:", img_path)  # Debugging output
-                else:
-                    img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image uploaded
-            else:
-                img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image field in the form
+            # Handle file upload and get the image path
+            img_path = handle_file_upload(request)
+            print("Image path:", img_path)  # Debugging output
 
             print("ISBN to be added:", isbn)  # Debugging output
             
@@ -485,6 +491,7 @@ def insertItem():
             totalpages = calculate_total_pages(countall('items'))
             return redirect(url_for('items'))
     return render_template('login.html')
+
 
 # Function to update an existing item
 @app.route('/update-item', methods=['POST'])
@@ -555,7 +562,6 @@ def view_image():
     return render_template('view_image.html', image_path=image_path) 
 """
 
-
 # Function to search for an item
 @app.route('/search-item', methods=['POST'])
 def searchItem():
@@ -566,7 +572,7 @@ def searchItem():
                 flash("Please type something to search!")
                 return redirect(url_for('items'))
             else:
-                data = getrecord('items', search_text=search_text)
+                data = getrecord('items', isbn=search_text, title=search_text, author=search_text, genre=search_text, price=search_text, i_type=search_text)
                 if not data:
                     flash(f"No record matches with {search_text}")
                     return redirect(url_for('items'))
@@ -574,6 +580,15 @@ def searchItem():
                     flash(f"{len(data)} record matches")
                     return render_template("admin_items.html", user=session['user'], data=data, page=1, totalpages=1, prev_page=None, next_page=None, title="Items List", header=itemHeader)
     return render_template('login.html')
+
+
+
+
+
+@app.route('/static/images/upload_img/<path:filename>')
+def static_image(filename):
+    return send_from_directory('static/images/upload_img', filename)
+
 
 
 ######################
