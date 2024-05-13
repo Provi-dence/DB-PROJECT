@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, url_for, redirect, flash, g, session
+from flask import Flask, request, render_template, url_for, redirect, flash, g, session, jsonify
 from flask import send_from_directory
 from dbhelper import *
 from datetime import datetime
+
 import math
 from werkzeug.utils import secure_filename
 import os
+
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.urandom(24)
@@ -34,6 +36,7 @@ def calculate_total_pages(total_items):
 def index():
     if 'user' in session:
         if session['user'][3] == 'admin':
+
             total_customer = countall('customer')
             total_items = countall('items')
             total_orders = countall('orders')
@@ -48,7 +51,8 @@ def index():
             recent_customer = get_recent('customer', 'c_id')
             recent_items = get_recent('items', 'i_id')
             #print(recent_items)
-            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders, ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'], ttl_revenue=ttl_revenue)
+            # Render admin_items.html with fetched data
+            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders, ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'], ttl_revenue=ttl_revenue,  header=itemHeader)
         else:
             if session['user'][4] != 0:
                 data = []
@@ -654,7 +658,43 @@ def updateOrderStatus():
     
 
 
-# Diri dapit
+######################
+#   DASHBOARD CODE   #
+######################
+
+
+
+@app.route('/get_items_data')
+def get_items_data():
+    try:
+        data = getall('items', page=0)
+        # Convert data to a list of dictionaries (JSON serializable format)
+        items_data = [
+            {'isbn': item[0], 'title': item[1], 'author': item[2], 'genre': item[3], 'price': item[4], 'i_type': item[5], 'stock': item[6]}
+            for item in data
+        ]
+        return jsonify(items_data)
+    except Exception as e:
+        print("Error fetching items data:", e)
+        return jsonify([])  # Return empty list if there's an error
+
+
+# app.py
+@app.route('/get_customers')
+def get_customers():
+    try:
+        customers = get_customer_details()
+
+        customers_data = [
+            {'c_id': customer[0], 'c_name': customer[1], 'c_email': customer[2], 'c_address': customer[3]}
+            for customer in customers
+        ]
+        return jsonify(customers_data)
+    except Exception as e:
+        flash("Error fetching customers data!")
+
+    return jsonify([])
+
 
 
 if __name__ == "__main__":
