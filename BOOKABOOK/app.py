@@ -592,8 +592,16 @@ def searchItem():
 @app.route('/static/images/upload_img/<path:filename>')
 def static_image(filename):
     return send_from_directory('static/images/upload_img', filename)
+#############################################################
 
+# Assume you have a Flask route to render the page containing the "Total Items" modal
+@app.route('/total_items')
+def total_items():
+    # Fetch items data from the database using your existing function
+    items = get_items()  # Assuming you have a function to fetch items data
+    return render_template('total_items.html', items=items)
 
+#############################################################
 
 ######################
 #     ORDERS CODE     #

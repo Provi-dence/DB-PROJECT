@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
 
 
-    <style>
+    <style> 
         /* Custom CSS */
         .card {
     background-color: #fff;
@@ -153,7 +153,7 @@
                     </div>
                 </div>
             </div>            
-            <div class="col-xl-6 col-lg-6 " id="totalItemsCard">
+            <div class="col-xl-6 col-lg-6" id="totalItemsCard" style="cursor: pointer;">
                 <div class="card l-bg-green-dark">
                     <div class="card-statistic-3 p-4">
                         <div class="card-icon card-icon-large"><i class="fas fa-ticket-alt"></i></div>
@@ -170,6 +170,16 @@
                     </div>
                 </div>
             </div>
+            
+            <script>
+                // Add event listener to totalItemsCard container
+                document.getElementById("totalItemsCard").addEventListener("click", function () {
+                    // Open the modal for exporting
+                    $('#exportItemModal').modal('show');
+                });
+            </script>
+            
+
             <div class="col-xl-6 col-lg-6">
                 <div class="card l-bg-orange-dark">
                     <div class="card-statistic-3 p-4">
@@ -240,32 +250,34 @@
 <!-- Total Item list -->
 <!-- Coded by: Jodel Saragena [Improved version]-->
 <!-- Table Content -->
-<div class="container">
-    <div id="totalItemsTable" style="display: none;">
-        <!-- Content -->
-        <div class="container mt-4">
-            <h2>Items List</h2>
-           
-            <!---->
-            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#exportItemModal">Export to CSV</button>
-		 
-            <!-- Items List -->
-            <table class="table l-bg-green-dark text-white">
-                <thead>
-                    <tr>
-                        <th scope="col">ISBN</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Author</th>
-                        <th scope="col">Genre</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Stock</th>
-                        <!--<th scope="col">Image</th>-->
-                        <!--<th scope="col">Actions</th>-->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data | reverse %}
+
+<!-- Export Item Modal -->
+<div class="modal fade" id="exportItemModal" tabindex="-1" role="dialog" aria-labelledby="exportItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportItemModalLabel">Items List</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Items List Table -->
+                <table class="table l-bg-green-dark text-white">
+                    <thead>
+                        <tr>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Author</th>
+                            <th scope="col">Genre</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populate this table using JavaScript -->
+                          {% for item in data | reverse %}
                     <tr>
                         {% for val in item %}
                         {% if loop.index not in [1, loop.length, loop.length-1] %}
@@ -277,48 +289,16 @@
                             {{ val }}
                             {% endif %}
                         </td>
-                        {% endif %}
-                        {% endfor %}
-                        <!-- New Image Column -->
-                        <!--
-                        <td>
-                            <button type="button" class="btn btn-primary view-image-btn" data-toggle="modal" data-target="#viewImageModal_{{ item.0 }}" data-img="{{ item[8] }}">View Image</button>
-                        </td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editItemModal_{{item.0}}">Edit</button>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteItemModal_{{item.0}}">Delete</button>
-                        </td>
-                        -->
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+
+                <!-- Export Button -->
+                <button id="exportCSVBtn" class="btn btn-primary">Export to CSV</button>
+                <button id="closeModalBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
-
-<!-- MODALS -->
-<!-- Export Item Modal -->
-<div class="modal fade" id="exportItemModal" tabindex="-1" role="dialog" aria-labelledby="exportItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exportItemModalLabel">Export Items to CSV</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Click the button below to export items to CSV format.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button id="exportCSVBtn" class="btn btn-primary">Export to CSV</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
 
 
 <!-- TABLE SCRIPTS -->
@@ -372,63 +352,9 @@
 
 <!-- Total Item list Scripts -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var totalItemsCard = document.getElementById("totalItemsCard");
-        var totalItemsTable = document.getElementById("totalItemsTable");
-
-        totalItemsCard.addEventListener("click", function() {
-            if (totalItemsTable.style.display === "none") {
-                // Fetch items data using AJAX
-                fetch('/get_items_data')
-                .then(response => response.json())
-                .then(data => {
-                    // Update the table with fetched data
-                    var tbody = totalItemsTable.querySelector('tbody');
-                    tbody.innerHTML = '';  // Clear existing rows
-                    data.forEach(item => {
-                        var row = document.createElement('tr');
-                        // Add item data to the row
-                        // Adjust this part based on your actual data structure
-                        row.innerHTML = `
-                            <td>${item.isbn}</td>
-                            <td>${item.title}</td>
-                            <td>${item.author}</td>
-                            <td>${item.genre}</td>
-                            <td>${item.price}</td>
-                            <td>${item.type}</td>
-                            <td>${item.stock}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    // Show the table with slide-left animation
-                    totalItemsTable.style.display = "block";
-                    totalItemsTable.classList.add('slide-left');
-                })
-                .catch(error => {
-                    console.error('Error fetching items data:', error);
-                    // Handle error here (e.g., show an error message)
-                });
-            } else {
-                // Hide the table with slide-right animation
-                totalItemsTable.classList.add('slide-right');
-                setTimeout(() => {
-                    totalItemsTable.style.display = "none";
-                    totalItemsTable.classList.remove('slide-right');
-                }, 300); // Adjust the timeout value to match your CSS animation duration
-            }
-        });
-    });
-</script>
-
-
-
-
-<!-- MODAL SCRIPTS CSV -->
-<!-- CSV item -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Function to download CSV file
-        function downloadCSV(csv, filename) {
+   document.addEventListener("DOMContentLoaded", function () {
+    // Function to download CSV file
+    function downloadCSV(csv, filename) {
         var csvFile;
         var downloadLink;
 
@@ -455,31 +381,29 @@
 
         // Click the download link
         downloadLink.click();
-        }
+    }
 
-        // Export CSV button click event
-            document.getElementById("exportCSVBtn").addEventListener("click", function() {
-            var csv = "ISBN,Title,Author,Genre,Price,Type,Stock\n"; // CSV header
+    // Export CSV button click event
+    document.getElementById("exportCSVBtn").addEventListener("click", function () {
+        var csv = "ISBN,Title,Author,Genre,Price,Type,Stock\n"; // CSV header
 
-            // Loop through items and add them to CSV content
-            {% for item in data %}
-            csv += "{{ item.isbn }},\"{{ item.title }}\",\"{{ item.author }}\",\"{{ item.genre }}\",{{ item.price }},\"{{ item.type }}\",{{ item.stock }}\n";
-            {% endfor %}
-
-            // Create a Blob and download link
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            var link = document.createElement("a");
-
-            // Set download attributes
-            link.href = URL.createObjectURL(blob);
-            link.download = "items.csv";
-
-            // Trigger download
-            link.click();
+        // Loop through table rows to extract data
+        var tableRows = document.querySelectorAll('#totalItemsTable tbody tr');
+        tableRows.forEach(function (row) {
+            var rowData = [];
+            var cells = row.querySelectorAll('td');
+            cells.forEach(function (cell) {
+                rowData.push(cell.innerText.trim());
+            });
+            csv += rowData.join(',') + '\n';
         });
 
-
+        // Download CSV file
+        downloadCSV(csv, "items.csv");
     });
+
+});
+
 </script>
 
   <!-- Include the export-csv.js file -->
