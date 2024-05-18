@@ -100,24 +100,7 @@
                             <p class="card-text">Stock: {{row.7}}</p>
                         </div>
                     </div>
-                </div>
-
-					<div class="card" style="width: 18rem;">
-						<img src="{{ url_for('static_image', filename = row[9].split('/')[-1]) }}" class="card-img-top" alt="Item Images">
-						<div class="card-body">
-						<h5 class="card-title">Card title</h5>
-						<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-						</div>
-						<ul class="list-group list-group-flush">
-						<li class="list-group-item">An item</li>
-						<li class="list-group-item">A second item</li>
-						<li class="list-group-item">A third item</li>
-						</ul>
-						<div class="card-body">
-						<a href="#" class="card-link">Card link</a>
-						<a href="#" class="card-link">Another link</a>
-						</div>
-					</div>
+                </div>	
 				
 				<!-- Add to Cart Modal -->
 				<div class="modal fade" id="addToCartModal_{{row.0}}" tabindex="-1" role="dialog" aria-labelledby="addToCartModalLabel" aria-hidden="true">

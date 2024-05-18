@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Admin Dashboard</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -116,26 +117,29 @@
 <div class="container mt-4">
     <h2>Dashboard</h2>
 
-
+    
     <div class="container">
         <div class="row ">
             <div class="col-xl-6 col-lg-6">
-                <div class="card l-bg-cherry">
+                <div class="card l-bg-cherry" data-toggle="modal" data-target="#totalOrdersModal">
                     <div class="card-statistic-3 p-4">
-                        <div class="card-icon card-icon-large"><i class="fas fa-shopping-cart"></i></div>
-                        <div class="mb-4">
-                            <h5 class="card-title mb-0">Total Orders</h5>
-                        </div>
-                        <div class="row align-items-center mb-2 d-flex">
-                            <div class="col-8">
-                                <h2 class="d-flex align-items-center mb-0">
-                                    {{ ttl_ord }}
-                                </h2>
+                        <a id="openPopupBtn" style="text-decoration:none; color:#fff;">
+                            <div class="card-icon card-icon-large"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="mb-4">
+                                <h5 class="card-title mb-0">Total Orders</h5>
                             </div>
-                        </div>
+                            <div class="row align-items-center mb-2 d-flex">
+                                <div class="col-8">
+                                    <h2 class="d-flex align-items-center mb-0" id="totalOrdersSection">
+                                        {{ ttl_ord }}
+                                    </h2>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
+            <!-- Total Customer Card -->
             <div class="col-xl-6 col-lg-6">
                 <div class="card l-bg-blue-dark" id="totalCustomerSection">
                     <div class="card-statistic-3 p-4">
@@ -145,14 +149,12 @@
                         </div>
                         <div class="row align-items-center mb-2 d-flex">
                             <div class="col-8">
-                                <h2 class="d-flex align-items-center mb-0">
-                                    {{ ttl_cust }}
-                                </h2>
+                                <h2 class="d-flex align-items-center mb-0">{{ ttl_cust }}</h2>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>            
+            </div>           
             <div class="col-xl-6 col-lg-6 " id="totalItemsCard">
                 <div class="card l-bg-green-dark">
                     <div class="card-statistic-3 p-4">
@@ -192,48 +194,186 @@
 </div>
 
 
-<!-- Total Order list -->
-<!-- Coded by: -->
-
-
-
-
-<!-- Total Customer List -->
+<!-- Total Customer list -->
 <!-- Coded by: Jundrel Alonzo -->
 <div class="container">
-    <div id="totalCustomerTable" style="display: none;">
-        
-        <!-- Content -->
-        <div class="container mt-4">
-            <h2>Customers List</h2>
-            
-            <!-- Customers List -->
-            <table class="table l-bg-blue-dark text-white">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Address</th>
-                        <!--<th scope="col">Actions</th>-->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cust in customers | reverse %}
-                    <tr>
-                        {% for val in cust %}
-                        {% if not loop.last %}
-                        <td>{{ val }}</td>
-                        {% endif %}
-                        {% endfor %}
-                        <!-- Debug output -->
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div id="totalCustomerTableModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="totalCustomerTableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="totalCustomerTableModalLabel">Customers List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table l-bg-blue-dark text-white" id="customerTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="exportCustomerCSVBtn" class="btn btn-primary">Export Customers to CSV</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+<!-- Total Order list -->
+<!-- Coded by: Tumabiene Nino -->
+<div class="container">
+
+    <!-- Orders Table Modal -->
+    <div class="modal fade" id="totalOrdersModal" tabindex="-1" role="dialog" aria-labelledby="totalOrdersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="totalOrdersModalLabel">Total Orders</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table l-bg-cherry text-white" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Customer Name</th>
+                                <th scope="col">Order Date</th>
+                                <th scope="col">Total Amount</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">  <!-- Add id for easy selection -->
+                            <!-- Table rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>                            
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exportCSVModal">
+                        Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export CSV Modal -->
+    <div class="modal fade" id="exportCSVModal" tabindex="-1" role="dialog" aria-labelledby="exportCSVModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportCSVModalLabel">Export Orders to CSV</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Click the button below to export the orders table to a CSV file.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="exportCSV">Export CSV</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript code -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/total_orders')  // Fetch data from Flask route
+                .then(response => response.json())
+                .then(data => {
+                    const ordersTableBody = document.getElementById('ordersTableBody');
+                    data.orders.forEach(order => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${order[1]}</td>
+                            <td>$${new Date(order[2]).toLocaleDateString()}</td>
+                            <td>$${order[4]}</td>
+                            <td>${order[5]}</td>
+                        `;
+                        ordersTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching orders:', error));
+
+            // Export CSV button click event inside the Total Orders modal
+            document.getElementById("exportCSV").addEventListener("click", function() {
+                var table = document.getElementById("ordersTable");
+                var rows = table.querySelectorAll("tr");
+                var csvContent = "data:text/csv;charset=utf-8,";
+
+                // Add headers
+                var headers = table.querySelectorAll("th");
+                var headerData = [];
+                headers.forEach(function(header) {
+                    headerData.push(header.innerText.replace(/,/g, '')); // Remove commas from headers
+                });
+                csvContent += headerData.join(",") + "\n";
+
+                // Add rows
+                rows.forEach(function(row) {
+                    var cols = row.querySelectorAll("td");
+                    var rowData = [];
+                    cols.forEach(function(col) {
+                        rowData.push(col.innerText.replace(/,/g, '')); // Remove commas from data
+                    });
+                    if (rowData.length > 0) {
+                        csvContent += rowData.join(",") + "\n";
+                    }
+                });
+
+                var encodedUri = encodeURI(csvContent);
+                var link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "orders.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var openPopupBtn = document.getElementById("openPopupBtn");
+            var closePopupBtn = document.getElementById("closePopupBtn");
+            var popup = document.getElementById("popup");
+
+            openPopupBtn.addEventListener("click", function() {
+                popup.style.display = "flex";
+            });
+
+            closePopupBtn.addEventListener("click", function() {
+                popup.style.display = "none";
+            });
+
+            window.addEventListener("click", function(event) {
+                if (event.target == popup) {
+                    popup.style.display = "none";
+                }
+            });
+        });
+    </script>
+</div>
+
 
 
 
@@ -253,6 +393,7 @@
             <table class="table l-bg-green-dark text-white">
                 <thead>
                     <tr>
+                        <th scope="col">ID</th>
                         <th scope="col">ISBN</th>
                         <th scope="col">Title</th>
                         <th scope="col">Author</th>
@@ -297,6 +438,7 @@
     </div>
 </div>
 
+
 <!-- MODALS -->
 <!-- Export Item Modal -->
 <div class="modal fade" id="exportItemModal" tabindex="-1" role="dialog" aria-labelledby="exportItemModalLabel" aria-hidden="true">
@@ -310,6 +452,7 @@
         </div>
         <div class="modal-body">
           <p>Click the button below to export items to CSV format.</p>
+          
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -325,49 +468,57 @@
 <!-- Total Customer list Scripts -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        var totalCustomerSection = document.getElementById("totalCustomerSection");
-        var totalCustomerTable = document.getElementById("totalCustomerTable");
+        var customerTable = document.getElementById("customerTable");
+        const exportCustomerCSVBtn = document.getElementById("exportCustomerCSVBtn");
 
-        totalCustomerSection.addEventListener("click", function() {
-            if (totalCustomerTable.style.display === "none") {
-                // Fetch customer data using AJAX
-                fetch("/get_customers")
+        // Fetch customers function
+        function fetchCustomers() {
+            fetch("/get_customers")
                 .then(response => response.json())
                 .then(data => {
-                    // Update the table with fetched data
-                    var tableBody = totalCustomerTable.querySelector("tbody");
+                    var tableBody = customerTable.querySelector("tbody");
                     tableBody.innerHTML = ""; // Clear existing rows
 
                     data.forEach(customer => {
                         var row = document.createElement("tr");
-
-                        // Add customer data to the row
                         row.innerHTML = `
                             <td>${customer.c_id}</td>
                             <td>${customer.c_name}</td>
                             <td>${customer.c_email}</td>
                             <td>${customer.c_address}</td>
                         `;
-
                         tableBody.appendChild(row);
                     });
-
-                    // Show the table with slide-left animation
-                    totalCustomerTable.style.display = "block";
-                    totalCustomerTable.classList.add('slide-left');
                 })
                 .catch(error => console.error('Error fetching customers:', error));
-            } else {
-                // Hide the table with slide-right animation
-                totalCustomerTable.classList.add('slide-right');
-                setTimeout(() => {
-                    totalCustomerTable.style.display = "none";
-                    totalCustomerTable.classList.remove('slide-right');
-                }, 300); // Adjust the timeout value to match your CSS animation duration
-            }
+        }
+
+        // Automatically fetch customers when DOM content is loaded
+        fetchCustomers();
+        
+        exportCustomerCSVBtn.addEventListener("click", function() {
+            fetch("/export_customers_csv", { method: "POST" })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = "customers.csv";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url); // Clean up URL object
+                })
+                .catch(error => console.error('Error exporting CSV:', error));
         });
     });
 </script>
+
 
 
 <!-- Total Item list Scripts -->
@@ -421,7 +572,23 @@
 </script>
 
 
+<!-- JavaScript for Customer Modal and Export CSV -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var totalCustomerSection = document.getElementById("totalCustomerSection");
+        var totalCustomerTableModal = document.getElementById("totalCustomerTableModal");
 
+        totalCustomerSection.addEventListener("click", function() {
+            $('#totalCustomerTableModal').modal('show');
+        });
+
+        // Export CSV button inside the Customer Modal
+        document.getElementById("exportCustomerCSVBtn").addEventListener("click", function() {
+            // Your CSV export logic here
+            alert("CSV Export functionality to be implemented.");
+        });
+    });
+</script>
 
 <!-- MODAL SCRIPTS CSV -->
 <!-- CSV item -->
@@ -462,9 +629,9 @@
             var csv = "ISBN,Title,Author,Genre,Price,Type,Stock\n"; // CSV header
 
             // Loop through items and add them to CSV content
-            {% for item in data %}
-            csv += "{{ item.isbn }},\"{{ item.title }}\",\"{{ item.author }}\",\"{{ item.genre }}\",{{ item.price }},\"{{ item.type }}\",{{ item.stock }}\n";
-            {% endfor %}
+            (`{% for item in data %}
+            csv += \"{{item.id}},\"{{ item.isbn }},\"{{ item.title }}\",\"{{ item.author }}\",\"{{ item.genre }}\",{{ item.price }},\"{{ item.type }}\",{{ item.stock }}\n";
+            {% endfor %}`)
 
             // Create a Blob and download link
             var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -513,7 +680,7 @@
 </style>
 
 
-
+<!-- JavaScript for Logout -->
 <script>
     function logout() {
         // Add your logout logic here
@@ -528,6 +695,17 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!-- Bootstrap CSS and JS -->
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 
 
 </body>

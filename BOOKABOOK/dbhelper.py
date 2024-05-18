@@ -240,9 +240,10 @@ def get_items():
         item['image_path'] = str(item['image_path'])
 
     return items
+
 # Database helper function for fetching customer details
 def get_customer_details():
-    sql = f"SELECT * FROM customer WHERE status=1";
+    sql = "SELECT c_id, c_name, c_email, c_address FROM customer WHERE status=1";
     customers = getProcess(sql)
 
     return customers

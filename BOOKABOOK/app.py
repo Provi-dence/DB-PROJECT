@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, url_for, redirect, flash, g, session, jsonify
+from flask import Flask, request, render_template, url_for, redirect, flash, g, session, jsonify, send_file
 from flask import send_from_directory
 from dbhelper import *
 from datetime import datetime
@@ -6,7 +6,7 @@ from datetime import datetime
 import math
 from werkzeug.utils import secure_filename
 import os
-
+from io import StringIO
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.urandom(24)
@@ -417,6 +417,7 @@ def searchCustomer():
 #     ITEMS CODE     #
 ######################
 
+
 # Function to fetch items data
 @app.route('/items')
 def items():
@@ -596,7 +597,7 @@ def static_image(filename):
 
 
 ######################
-#     ORDERS CODE     #
+#    ORDERS CODE     #
 ######################
 @app.route('/orders-list')
 def orders():
@@ -683,18 +684,58 @@ def get_items_data():
 @app.route('/get_customers')
 def get_customers():
     try:
-        customers = get_customer_details()
+        # Fetch customer data using getall function
+        customers = getall('customer', 1)  # Assuming '1' is the status code for active customers
 
+        # Convert the fetched data into a list of dictionaries
         customers_data = [
             {'c_id': customer[0], 'c_name': customer[1], 'c_email': customer[2], 'c_address': customer[3]}
             for customer in customers
         ]
-        return jsonify(customers_data)
+
+        return jsonify(customers_data)  # Serialize the data to JSON format
     except Exception as e:
-        flash("Error fetching customers data!")
+        # Handle exceptions here (e.g., log the error, return an empty list, etc.)
+        return jsonify([])  # Return an empty JSON array in case of an error
+    
 
-    return jsonify([])
+@app.route('/export_customers_csv', methods=['POST'])
+def export_customers_csv():
+    try:
+        customers = getall('customer', page=1)  # Assuming you want to export all customers
+        if not customers:
+            return jsonify({'message': 'No customers found!'}), 404
 
+        # Create CSV data
+        csv_data = "ID,Name,Email,Address\n"  # CSV header
+        for customer in customers:
+            csv_data += f"{customer[0]},{customer[1]},{customer[2]},{customer[3]}\n"
+        
+        # Use StringIO to create a file-like object
+        csv_file = StringIO()
+        csv_file.write(csv_data)
+        csv_file.seek(0)  # Move the cursor to the start of the file-like object
+
+        # Send CSV file as an attachment
+        return send_file(
+            csv_file,
+            mimetype='text/csv',
+            attachment_filename='customers.csv',
+            as_attachment=True
+        )
+        
+    except Exception as e:
+        # Handle exceptions here (e.g., log the error, return an error response, etc.)
+        print(f"Error exporting CSV: {e}")
+        return jsonify({'message': 'Error exporting CSV!'}), 500
+
+    
+
+@app.route('/total_orders')
+def total_orders():
+    # Assuming 'orders' is the data you want to fetch using getall
+    orders = getall('orders', page=1)  # Assuming you want all orders from the first page
+    return jsonify(orders=orders)  # Return JSON response
 
 
 if __name__ == "__main__":
