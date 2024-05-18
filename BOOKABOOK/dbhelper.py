@@ -222,11 +222,16 @@ def get_total_revenue():
     FROM ItemsOrdered io
     JOIN Items i ON io.i_id = i.i_id;
     """
-    result = getProcess(sql)
-    if result and result[0][0] is not None:
-        return result[0][0]
-    else:
-        return 0.0  # Return a default value if no revenue is 
+    try:
+        result = getProcess(sql)
+        if result and result[0][0] is not None:
+            return result[0][0]
+        else:
+            return 0.0  # Return a default value if no revenue is found
+    except Exception as e:
+        print("Error fetching total revenue:", e)
+        return 0.0  # Return a default value if there's an error
+
     
 
 # Assume you have a function to fetch items from the database

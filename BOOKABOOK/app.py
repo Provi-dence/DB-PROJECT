@@ -664,14 +664,13 @@ def updateOrderStatus():
 ######################
 
 
-
 @app.route('/get_items_data')
 def get_items_data():
     try:
         data = getall('items', page=0)
         # Convert data to a list of dictionaries (JSON serializable format)
         items_data = [
-            {'isbn': item[0], 'title': item[1], 'author': item[2], 'genre': item[3], 'price': item[4], 'i_type': item[5], 'stock': item[6]}
+            {'isbn': item[1], 'title': item[2], 'author': item[3], 'genre': item[4], 'price': item[5], 'i_type': item[6], 'stock': item[7]}
             for item in data
         ]
         return jsonify(items_data)

@@ -7,10 +7,12 @@
     <title>Admin Dashboard</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <style>
         /* Custom CSS */
         .card {
@@ -155,8 +157,9 @@
                     </div>
                 </div>
             </div>           
-            <div class="col-xl-6 col-lg-6 " id="totalItemsCard">
-                <div class="card l-bg-green-dark">
+           <!-- Total Items Card -->
+           <div class="col-xl-6 col-lg-6" >
+                <div class="card l-bg-green-dark" id="totalItemsCard">
                     <div class="card-statistic-3 p-4">
                         <div class="card-icon card-icon-large"><i class="fas fa-ticket-alt"></i></div>
                         <div class="mb-4">
@@ -164,7 +167,7 @@
                         </div>
                         <div class="row align-items-center mb-2 d-flex">
                             <div class="col-8">
-                                <h2 class="d-flex align-items-center mb-0">
+                                <h2 class="d-flex align-items-center mb-0" id="totalItemsValue">
                                     {{ ttl_item }}
                                 </h2>
                             </div>
@@ -228,11 +231,74 @@
             </div>
         </div>
     </div>
+
+    <!-- TABLE SCRIPTS -->
+    <!-- Total Customer list Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var customerTable = document.getElementById("customerTable");
+            const exportCustomerCSVBtn = document.getElementById("exportCustomerCSVBtn");
+
+            // Fetch customers function
+            function fetchCustomers() {
+                fetch("/get_customers")
+                    .then(response => response.json())
+                    .then(data => {
+                        var tableBody = customerTable.querySelector("tbody");
+                        tableBody.innerHTML = ""; // Clear existing rows
+
+                        data.forEach(customer => {
+                            var row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${customer.c_id}</td>
+                                <td>${customer.c_name}</td>
+                                <td>${customer.c_email}</td>
+                                <td>${customer.c_address}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching customers:', error));
+            }
+
+            // Automatically fetch customers when DOM content is loaded
+            fetchCustomers();
+            
+            // Function to export table data to CSV
+            function exportTableToCSV(filename) {
+                var csv = [];
+                var rows = customerTable.querySelectorAll("tr");
+
+                for (var i = 0; i < rows.length; i++) {
+                    var row = [], cols = rows[i].querySelectorAll("td, th");
+
+                    for (var j = 0; j < cols.length; j++) 
+                        row.push(cols[j].innerText);
+
+                    csv.push(row.join(","));        
+                }
+
+                // Create a download link
+                var csvFile = new Blob([csv.join("\n")], { type: 'text/csv' });
+                var downloadLink = document.createElement("a");
+                downloadLink.download = filename;
+                downloadLink.href = window.URL.createObjectURL(csvFile);
+                downloadLink.style.display = "none";
+
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+            }
+
+            // Event listener for the export button
+            exportCustomerCSVBtn.addEventListener("click", function() {
+                exportTableToCSV('customers.csv');
+            });
+
+            // Automatically fetch customers when DOM content is loaded
+            fetchCustomers();
+        });
+    </script>
 </div>
-
-
-
-
 
 
 
@@ -306,7 +372,7 @@
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${order[1]}</td>
-                            <td>$${new Date(order[2]).toLocaleDateString()}</td>
+                            <td>${new Date(order[2]).toLocaleDateString()}</td>
                             <td>$${order[4]}</td>
                             <td>${order[5]}</td>
                         `;
@@ -372,282 +438,145 @@
             });
         });
     </script>
-</div>
+    <!-- JavaScript for Customer Modal and Export CSV -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var totalCustomerSection = document.getElementById("totalCustomerSection");
+            var totalCustomerTableModal = document.getElementById("totalCustomerTableModal");
 
+            totalCustomerSection.addEventListener("click", function() {
+                $('#totalCustomerTableModal').modal('show');
+            });
+
+            // Export CSV button inside the Customer Modal
+            document.getElementById("exportCustomerCSVBtn").addEventListener("click", function() {
+                // Your CSV export logic here
+                alert("CSV Export functionality to be implemented.");
+            });
+        });
+    </script>
+</div>
 
 
 
 <!-- Total Item list -->
 <!-- Coded by: Jodel Saragena [Improved version]-->
-<!-- Table Content -->
 <div class="container">
-    <div id="totalItemsTable" style="display: none;">
-        <!-- Content -->
-        <div class="container mt-4">
-            <h2>Items List</h2>
-           
-            <!---->
-            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#exportItemModal">Export to CSV</button>
-		 
-            <!-- Items List -->
-            <table class="table l-bg-green-dark text-white">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">ISBN</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Author</th>
-                        <th scope="col">Genre</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Stock</th>
-                        <!--<th scope="col">Image</th>-->
-                        <!--<th scope="col">Actions</th>-->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data | reverse %}
-                    <tr>
-                        {% for val in item %}
-                        {% if loop.index not in [1, loop.length, loop.length-1] %}
-                        <td>
-                            {% if loop.index == 6 %}
-                            {% set i_price = item.5|float %}
-                                {{ '%.2f'|format(i_price) }}
-                            {% else %}
-                            {{ val }}
-                            {% endif %}
-                        </td>
-                        {% endif %}
-                        {% endfor %}
-                        <!-- New Image Column -->
-                        <!--
-                        <td>
-                            <button type="button" class="btn btn-primary view-image-btn" data-toggle="modal" data-target="#viewImageModal_{{ item.0 }}" data-img="{{ item[8] }}">View Image</button>
-                        </td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editItemModal_{{item.0}}">Edit</button>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteItemModal_{{item.0}}">Delete</button>
-                        </td>
-                        -->
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Items List Modal -->
+    <div class="modal fade" id="totalItemsModal" tabindex="-1" role="dialog" aria-labelledby="totalItemsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="totalItemsModalLabel">Items List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table l-bg-green-dark text-white">
+                        <thead>
+                            <tr>
+                                <th scope="col">ISBN</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Author</th>
+                                <th scope="col">Genre</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                            <!-- Dynamic content will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <!-- Button to export CSV -->
+                    <button type="button" id="exportItemsCSVBtn" class="btn btn-primary">Export CSV</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-
-
-<!-- MODALS -->
-<!-- Export Item Modal -->
-<div class="modal fade" id="exportItemModal" tabindex="-1" role="dialog" aria-labelledby="exportItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exportItemModalLabel">Export Items to CSV</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Click the button below to export items to CSV format.</p>
-          
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button id="exportCSVBtn" class="btn btn-primary">Export to CSV</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-
-
-<!-- TABLE SCRIPTS -->
-<!-- Total Customer list Scripts -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var customerTable = document.getElementById("customerTable");
-        const exportCustomerCSVBtn = document.getElementById("exportCustomerCSVBtn");
-
-        // Fetch customers function
-        function fetchCustomers() {
-            fetch("/get_customers")
-                .then(response => response.json())
-                .then(data => {
-                    var tableBody = customerTable.querySelector("tbody");
-                    tableBody.innerHTML = ""; // Clear existing rows
-
-                    data.forEach(customer => {
-                        var row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${customer.c_id}</td>
-                            <td>${customer.c_name}</td>
-                            <td>${customer.c_email}</td>
-                            <td>${customer.c_address}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Error fetching customers:', error));
-        }
-
-        // Automatically fetch customers when DOM content is loaded
-        fetchCustomers();
-        
-        exportCustomerCSVBtn.addEventListener("click", function() {
-            fetch("/export_customers_csv", { method: "POST" })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.href = url;
-                    link.download = "customers.csv";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(url); // Clean up URL object
-                })
-                .catch(error => console.error('Error exporting CSV:', error));
-        });
-    });
-</script>
-
-
-
+    
 <!-- Total Item list Scripts -->
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var totalItemsCard = document.getElementById("totalItemsCard");
-        var totalItemsTable = document.getElementById("totalItemsTable");
 
         totalItemsCard.addEventListener("click", function() {
-            if (totalItemsTable.style.display === "none") {
-                // Fetch items data using AJAX
-                fetch('/get_items_data')
-                .then(response => response.json())
-                .then(data => {
-                    // Update the table with fetched data
-                    var tbody = totalItemsTable.querySelector('tbody');
-                    tbody.innerHTML = '';  // Clear existing rows
-                    data.forEach(item => {
-                        var row = document.createElement('tr');
-                        // Add item data to the row
-                        // Adjust this part based on your actual data structure
-                        row.innerHTML = `
-                            <td>${item.isbn}</td>
-                            <td>${item.title}</td>
-                            <td>${item.author}</td>
-                            <td>${item.genre}</td>
-                            <td>${item.price}</td>
-                            <td>${item.type}</td>
-                            <td>${item.stock}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    // Show the table with slide-left animation
-                    totalItemsTable.style.display = "block";
-                    totalItemsTable.classList.add('slide-left');
-                })
-                .catch(error => {
-                    console.error('Error fetching items data:', error);
-                    // Handle error here (e.g., show an error message)
+            // Fetch items data using AJAX
+            fetch('/get_items_data')
+            .then(response => response.json())
+            .then(data => {
+                // Update the table with fetched data
+                var tbody = document.getElementById('itemsTableBody');
+                tbody.innerHTML = '';  // Clear existing rows
+                data.forEach(item => {
+                    var row = document.createElement('tr');
+                    // Add item data to the row excluding the ID field
+                    row.innerHTML = `
+                        <td>${item.isbn}</td>
+                        <td>${item.title}</td>
+                        <td>${item.author}</td>
+                        <td>${item.genre}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td>${item.i_type || ''}</td> <!-- Use fallback to empty string if i_type is undefined -->
+                        <td>${item.stock}</td>
+                    `;
+                    tbody.appendChild(row);
                 });
-            } else {
-                // Hide the table with slide-right animation
-                totalItemsTable.classList.add('slide-right');
-                setTimeout(() => {
-                    totalItemsTable.style.display = "none";
-                    totalItemsTable.classList.remove('slide-right');
-                }, 300); // Adjust the timeout value to match your CSS animation duration
-            }
+                // Show the modal
+                $('#totalItemsModal').modal('show');
+
+                // Export CSV button click event
+                exportItemsCSVBtn.addEventListener("click", function() {
+                    exportToCSV(data);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching items data:', error);
+                // Handle error here (e.g., show an error message)
+            });
         });
-    });
-</script>
+        // Function to export data to CSV
+        function exportToCSV(items) {
+            var csv = 'ISBN,Title,Author,Genre,Price,Type,Stock\n';
+            items.forEach(item => {
+                csv += `${item.isbn},${item.title},${item.author},${item.genre},${item.price.toFixed(2)},${item.i_type || ''},${item.stock}\n`;
+            });
 
-
-<!-- JavaScript for Customer Modal and Export CSV -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var totalCustomerSection = document.getElementById("totalCustomerSection");
-        var totalCustomerTableModal = document.getElementById("totalCustomerTableModal");
-
-        totalCustomerSection.addEventListener("click", function() {
-            $('#totalCustomerTableModal').modal('show');
-        });
-
-        // Export CSV button inside the Customer Modal
-        document.getElementById("exportCustomerCSVBtn").addEventListener("click", function() {
-            // Your CSV export logic here
-            alert("CSV Export functionality to be implemented.");
-        });
-    });
-</script>
-
-<!-- MODAL SCRIPTS CSV -->
-<!-- CSV item -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Function to download CSV file
-        function downloadCSV(csv, filename) {
-        var csvFile;
-        var downloadLink;
-
-        // Create CSV file
-        csvFile = new Blob([csv], { type: "text/csv;charset=utf-8;" }); // Specify UTF-8 encoding
-
-        // Create download link
-        downloadLink = document.createElement("a");
-
-        // File name
-        downloadLink.download = filename;
-
-        // Create a link to the file
-        downloadLink.href = window.URL.createObjectURL(csvFile);
-
-        // Specify MIME type explicitly
-        downloadLink.type = "text/csv";
-
-        // Hide download link
-        downloadLink.style.display = "none";
-
-        // Add the link to the body
-        document.body.appendChild(downloadLink);
-
-        // Click the download link
-        downloadLink.click();
-        }
-
-        // Export CSV button click event
-            document.getElementById("exportCSVBtn").addEventListener("click", function() {
-            var csv = "ISBN,Title,Author,Genre,Price,Type,Stock\n"; // CSV header
-
-            // Loop through items and add them to CSV content
-            (`{% for item in data %}
-            csv += \"{{item.id}},\"{{ item.isbn }},\"{{ item.title }}\",\"{{ item.author }}\",\"{{ item.genre }}\",{{ item.price }},\"{{ item.type }}\",{{ item.stock }}\n";
-            {% endfor %}`)
-
-            // Create a Blob and download link
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            var link = document.createElement("a");
-
-            // Set download attributes
-            link.href = URL.createObjectURL(blob);
-            link.download = "items.csv";
-
-            // Trigger download
+            // Create a temporary anchor element
+            var link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            link.target = '_blank';
+            link.download = 'items.csv';
+            document.body.appendChild(link);
             link.click();
-        });
-
-
+            document.body.removeChild(link);
+        }
     });
 </script>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var exportCSVBtn = document.getElementById("exportCSVBtn");
+
+        totalItemsCard.addEventListener("click", function() {
+            $('#totalItemsModal').modal('show');
+        });
+    });
+</script>
+
+</div>
+
+
+
+
+
 
   <!-- Include the export-csv.js file -->
 <script src="path/to/export-csv.js"></script>
@@ -705,6 +634,9 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 
 
