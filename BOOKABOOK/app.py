@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, url_for, redirect, flash, g, session, jsonify, send_file
+from flask import request, jsonify
 from flask import send_from_directory
 from dbhelper import *
 from datetime import datetime
@@ -736,6 +737,33 @@ def total_orders():
     orders = getall('orders', page=1)  # Assuming you want all orders from the first page
     return jsonify(orders=orders)  # Return JSON response
 
+#DATE RANGE
+@app.route('/orders')
+# Mock function to filter orders by date range
+def filter_orders_by_date_range(start_date, end_date):
+    # Mock data representing orders
+    orders = []
+    
+    # Filter orders based on the date range
+    if start_date and end_date:
+        filtered_orders = [order for order in orders if start_date <= order[2] <= end_date]
+    else:
+        filtered_orders = orders
+
+    return filtered_orders
+
+@app.route('/admin_orders')
+def admin_orders():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    # Filter orders based on the date range
+    filtered_orders = filter_orders_by_date_range(start_date, end_date)
+
+    # Assuming user information is stored in session
+    user = session.get('user')
+
+    return render_template('admin_orders.html', orders=filtered_orders, user=user)
 
 if __name__ == "__main__":
 	app.run(debug=True, host='0.0.0.0', port=5000)

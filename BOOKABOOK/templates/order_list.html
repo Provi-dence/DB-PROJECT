@@ -25,46 +25,29 @@
 </head>
 <body style="background-color: #ffffff; color: #000000;">
 
-{% include 'admin_navbar.html' %}
+<!-- Navbar Placeholder -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Admin Panel</a>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Orders</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
 <!-- Content -->
 <div class="container mt-4">
     <h2>Orders List</h2>
-    
-    {% with messages = get_flashed_messages() %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% for message in messages %}
-    <p class="text-lg {% if 'no' in message | lower or 'failed' in message | lower or 'unable' in message | lower %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
+    {% for category, message in messages %}
+    <p class="text-lg {% if category == 'danger' %} text-danger {% else %} text-success {% endif %}">{{ message }}</p>
     {% endfor %}
     {% endif %}
     {% endwith %}
-
-    <!-- Date Range Filter -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <label for="startDate">Start Date:</label>
-            <input type="date" class="form-control" id="startDate">
-        </div>
-        <div class="col-md-6">
-            <label for="endDate">End Date:</label>
-            <input type="date" class="form-control" id="endDate">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <button type="button" class="btn btn-primary" id="filterBtn">Filter</button>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById("filterBtn").addEventListener("click", function() {
-            var startDate = document.getElementById("startDate").value;
-            var endDate = document.getElementById("endDate").value;
-
-            // Redirect to URL with date range parameters
-            window.location.href = "/admin_orders?start_date=" + startDate + "&end_date=" + endDate;
-        });
-    </script>
 
     <!-- Orders List -->
     <table class="table table-light">
@@ -83,7 +66,7 @@
             <tr data-toggle="modal" data-target="#orderDetailsModal_{{ row[0] }}">
                 <!--<td>{{ row[0] }}</td>-->
                 <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
+                <td>{{ row[2] }} - {{ row[3] }}</td> <!-- Updated to show date range -->
                 <td>${{ row[4] }}</td>
                 <td>{{ row[5] }}</td>
             </tr>
@@ -99,44 +82,44 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <h6>Order Date: {{ row[2] }}</h6>
+                            <h6>Order Date: {{ row[2] }} - {{ row[3] }}</h6> <!-- Updated to show date range -->
                             <h6>Customer Name: {{ row[1] }}</h6>
 
-                                <div class="item-list">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <p><strong>Item Name:</strong></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p><strong>ISBN:</strong></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p><strong>Quantity:</strong></p>
-                                        </div>
+                            <div class="item-list">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Item Name:</strong></p>
                                     </div>
-                                    
-                                    {% for data in data2 %}
-                                    {% if data[0] == row[0] %}
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <p>{{ data[2] }}</p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p>{{ data[3] }}</p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p>{{ data[4] }}</p>
-                                        </div>
+                                    <div class="col-md-4">
+                                        <p><strong>ISBN:</strong></p>
                                     </div>
-                                    <hr>
-                                    {% endif %}
-                                    {% endfor %}
+                                    <div class="col-md-4">
+                                        <p><strong>Quantity:</strong></p>
+                                    </div>
                                 </div>
+
+                                {% for data in data2 %}
+                                {% if data[0] == row[0] %}
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p>{{ data[2] }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p>{{ data[3] }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p>{{ data[4] }}</p>
+                                    </div>
+                                </div>
+                                <hr>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
 
                             <h6>Total Price: ${{ row[4] }}</h6>
 
                             <!-- Update Status Form -->
-                            <form action="{{ url_for('updateOrderStatus') }}" method="POST">
+                            <form action="{{ url_for('update_order_status') }}" method="POST">
                                 <div class="form-group">
                                     <input type="hidden" name="id" value="{{ row[0] }}">
                                     <label for="orderStatus">Update Status:</label>
@@ -144,7 +127,7 @@
                                     {% if row[5] == 'Pending' %}
                                     
                                     <select name="status" class="form-control" id="orderStatus">
-                                        <option value="Pending" >Pending</option>
+                                        <option value="Pending">Pending</option>
                                         <option value="Delivered">Delivered</option>
                                         <option value="Cancelled">Cancelled</option>
                                     </select>
