@@ -107,8 +107,27 @@ def gettotalprice(c_id)->list:
     return getProcess(sql)
 	
 # dbhelper.py
+def getrecord(table: str, **kwargs) -> list:
+    search_conditions = []
+    values = []
+    for key, value in kwargs.items():
+        if value:
+            search_conditions.append(f"{key} = ?")
+            values.append(value)
 
-def getrecord(table:str, **kwargs) -> list:
+    condition = " AND ".join(search_conditions)
+    sql = f"SELECT * FROM {table} WHERE {condition} AND status = 1"
+    db = connect()  # Assuming connect() is a function to establish a database connection
+    cursor = db.cursor()
+    cursor.execute(sql, values)
+    result = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return result
+
+
+
+def getrecord_v2(table:str, **kwargs) -> list:
     search_conditions = []
     for key, value in kwargs.items():
         if value:
@@ -117,6 +136,8 @@ def getrecord(table:str, **kwargs) -> list:
     condition = " OR ".join(search_conditions)
     sql = f"SELECT * FROM {table} WHERE ({condition}) AND status = 1"
     return getProcess(sql)
+
+
 
 
 #=========================JUNDREL ALONZO===========================#   
@@ -253,5 +274,13 @@ def get_customer_details():
 
     return customers
 
+
+def update_password(user_id, hashed_password):
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET password = ? WHERE u_id = ?", (hashed_password, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 #==================================================================#

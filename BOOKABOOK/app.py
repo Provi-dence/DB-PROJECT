@@ -5,6 +5,7 @@ from datetime import datetime
 
 import math
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash 
 import os
 from io import StringIO
 
@@ -31,79 +32,119 @@ def add_header(response):
 
 def calculate_total_pages(total_items):
     return math.ceil(total_items / 15)
-    
-@app.route('/', methods=['GET','POST'])
+
+ 
+def check_and_hash_password(password):
+    # Check if the password is already hashed
+    if not password.startswith('$2b$'):
+        # Password is not hashed, hash it
+        hashed_password = generate_password_hash(password)
+    else:
+        hashed_password = password
+    return hashed_password
+
+#Login
+@app.route('/', methods=['GET', 'POST'])
 def index():
     if 'user' in session:
         if session['user'][3] == 'admin':
-
             total_customer = countall('customer')
             total_items = countall('items')
             total_orders = countall('orders')
             recent_orders = get_recent_orders()
-
-            print("Recent Orders")
-            print(recent_orders)
-
-            # Fetch total revenue using the helper function
             ttl_revenue = get_total_revenue()
-
             recent_customer = get_recent('customer', 'c_id')
             recent_items = get_recent('items', 'i_id')
-            #print(recent_items)
-            # Render admin_items.html with fetched data
-            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders, ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'], ttl_revenue=ttl_revenue,  header=itemHeader)
+
+            return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders,
+                                   ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders,
+                                   rec_item=recent_items, rec_cust=recent_customer, user=session['user'],
+                                   ttl_revenue=ttl_revenue)
         else:
             if session['user'][4] != 0:
-                data = []
                 try:
-                    data = getall('items', page = 1)
+                    data = getall('items', page=1)
                 except Exception as e:
-                    flash("NO ITEMS AVAILBLE")
+                    flash("NO ITEMS AVAILABLE")
                 return render_template("shop.html", title="Bookabook", search=False, items=data, user=session['user'])
             else:
-                return render_template("error.html", message="Your account is deactivated please contact admin support!")
-            
+                return render_template("error.html", message="Your account is deactivated, please contact admin support!")
+
     if request.method == 'POST':
         session.pop('user', None)
+        uname = request.form['username']
+        passw = request.form['password']
+
+        # Fetch user data from the database based on username
+        user_data = getrecord('users', username=uname)
         
-        uname=request.form['username']
-        passw=request.form['password']
-        
-        account = []
-        account = getrecord('users', username=uname.replace('\\', '').replace('/', '').replace('*', '').replace('-', '').lower(), password=passw)
-        
-        if len(account) > 0:
-            session['user'] = account[0]
-            if session['user'][3] == 'admin':
-                total_customer = countall('customer')
-                total_items = countall('items')
-                total_orders = countall('orders')
-                recent_orders = get_recent_orders()
-                recent_customer = get_recent('customer', 'c_id')
-                recent_items = get_recent('items', 'i_id')
-                return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord = total_orders, ttl_cust = total_customer, ttl_item=total_items, rec_ord = recent_orders, rec_item=recent_items, rec_cust=recent_customer, user=session['user'])
-            else:
-                if session['user'][4] != 0:
-                    data = []
-                    try:
-                        data = getall('items', page = 1)
-                    except Exception as e:
-                        flash("NO ITEMS AVAILBLE")
-                    return render_template("shop.html", title="Bookabook", search=False, items=data, user=session['user'])
+        # Debugging: Log the fetched user data
+        print(f"Fetched user data: {user_data}")
+
+        if user_data:
+            stored_password = user_data[0][2]  # Assuming user_data[0][2] contains the stored password (hashed or unhashed)
+            user_id = user_data[0][0]  # Assuming user_data[0][0] contains the user ID
+
+            # Debugging: Log the stored password before hashing check
+            print(f"Stored password before check: {stored_password}")
+
+            # Check if the password is already hashed
+            if not stored_password.startswith(('pbkdf2:sha256', 'bcrypt', 'scrypt', '$2b$')):
+                # Password is not hashed, hash it and update the database
+                hashed_password = generate_password_hash(stored_password)
+                update_password(user_id, hashed_password)
+                stored_password = hashed_password
+
+                # Debugging: Log the newly hashed password
+                print(f"Newly hashed password: {hashed_password}")
+
+            # Debugging: Log the password entered by the user
+            print(f"Password entered: {passw}")
+
+            # Check if the password matches
+            if check_password_hash(stored_password, passw):
+                # Password matched, create session for the user
+                session['user'] = user_data[0]
+
+                if session['user'][3] == 'admin':
+                    total_customer = countall('customer')
+                    total_items = countall('items')
+                    total_orders = countall('orders')
+                    recent_orders = get_recent_orders()
+                    recent_customer = get_recent('customer', 'c_id')
+                    recent_items = get_recent('items', 'i_id')
+                    return render_template("admin_dashboard.html", title="Admin Dashboard", ttl_ord=total_orders,
+                                           ttl_cust=total_customer, ttl_item=total_items, rec_ord=recent_orders,
+                                           rec_item=recent_items, rec_cust=recent_customer, user=session['user'])
                 else:
-                    return render_template("error.html", message="Your account is deactivated please contact admin support!")
+                    if session['user'][4] != 0:
+                        try:
+                            data = getall('items', page=1)
+                        except Exception as e:
+                            flash("NO ITEMS AVAILABLE")
+                        return render_template("shop.html", title="Bookabook", search=False, items=data, user=session['user'])
+                    else:
+                        return render_template("error.html", message="Your account is deactivated, please contact admin support!")
+            else:
+                flash("Invalid username or password")
+                print("Password mismatch")  # Debugging: Log password mismatch
         else:
             flash("Invalid username or password")
+            print("User does not exist")  # Debugging: Log user not found
+
     return render_template('login.html', title="Sign in")
-    
+
+
+
+
+
 @app.before_request
 def before_request():
     g.user = None
-    
     if 'user' in session:
         g.user = session['user']
-        
+
+
 @app.route('/dropsession')
 def dropsession():
     session.pop('user', None)
@@ -124,6 +165,7 @@ def items_list():
     return redirect(url_for('customer'))
 """
 
+
 @app.route('/register')
 def register_page():
     if 'user' in session:
@@ -131,12 +173,14 @@ def register_page():
     else:
         return render_template('register.html')
 
+
 @app.route('/account-created-successfully')
 def successfully_page():
     if 'user' in session:
         return redirect(url_for('index'))
     else:
         return render_template('success.html')
+
 
 @app.route('/cart')
 def cart_page():
@@ -285,34 +329,40 @@ def orders_page():
             return render_template("orders.html", title="Your Orders", items=data, user=session['user'])
     return redirect(url_for('index'))
     
-@app.route('/create-account', methods = ['POST'])
+@app.route('/create-account', methods=['POST'])
 def create_account():
     if 'user' in session:
         return redirect(url_for('index'))
     else:
-        if request.method == "POST":
+        if request.method == 'POST':
             try:
                 name = request.form['name']
                 email = request.form['username']
                 address = request.form['address']
                 password = request.form['password']
+
+                # Check if password meets minimum length requirement
+                if len(password) < 8:
+                    flash("Password should be at least 8 characters long.")
+                    return redirect(url_for('register_page'))
                 
-                success = addrecord('users',username=email.replace('\\', '').replace('/', '').replace('*', '').replace('-', '').lower(), password=password, u_type='customer', status=1)
-                
+                # Hash the password before saving it to the database
+                hashed_password = generate_password_hash(password)
+
+                success = addrecord('users', username=email.replace('\\', '').replace('/', '').replace('*', '').replace('-', '').lower(), password=hashed_password, u_type='customer', status=1)
+
                 if not success:
                     flash("Email already in use. Please login!")
                     return redirect(url_for('register_page'))
                 else:
                     c_id = getrecord('users', username=email)
-                    print(c_id)
-                    success = addrecord('customer',c_id=c_id[0][0], c_name=name.title(), c_email=email.lower(), c_address=address.title(), status=1)
+                    success = addrecord('customer', c_id=c_id[0][0], c_name=name.title(), c_email=email.lower(), c_address=address.title(), status=1)
                     date_now = datetime.now().date()
-                    cart_created = addrecord('cart',cart_id=c_id[0][0], date_created=date_now)
-                    print(f"CART CREATED? {cart_created}")
-                    print(f"DATE? {date_now}")
+                    cart_created = addrecord('cart', cart_id=c_id[0][0], date_created=date_now)
+
                     return redirect(url_for('successfully_page'))
             except Exception as e:
-                flash("Email already in use. Please choose another or log in.")
+                flash("Error creating account. Please try again.")
                 return redirect(url_for('register_page'))
         return render_template('register.html')
 
@@ -393,6 +443,8 @@ def deleteCustomer(id_data):
     
     
 
+# app.py
+
 @app.route('/search-customer', methods=['POST'])
 def searchCustomer():
     if 'user' in session:
@@ -402,7 +454,7 @@ def searchCustomer():
                 flash("Please type something to search!")
                 return redirect(url_for('customer'))
             else:
-                data = getrecord('customer', c_id=search_text, c_name=search_text, c_email=search_text, c_address=search_text)
+                data = getrecord_v2('customer', c_id=search_text, c_name=search_text, c_email=search_text, c_address=search_text)
                 if len(data) == 0:
                     flash(f"No record matches with {search_text}")
                     return redirect(url_for('customer'))
@@ -411,14 +463,17 @@ def searchCustomer():
                     flash(f"{len(data)} record matches")
                     return render_template("admin_customers.html", title="Customers List", user=session['user'], customer=data, header=customerHeader)
     return render_template('login.html')
+
+
+
+
+
     
 
 ######################
 #     ITEMS CODE     #
 ######################
 
-
-# Function to fetch items data
 @app.route('/items')
 def items():
     if 'user' in session:
@@ -436,7 +491,6 @@ def items():
                 flash("Items list is empty!")
             return render_template("admin_items.html", data=data, title="Items List", user=session['user'], header=itemHeader)
     return redirect(url_for('index'))
-
 
 @app.route('/display/<filename>')
 def display_image(filename):
@@ -477,13 +531,31 @@ def insertItem():
             price = request.form['price']
             itype = request.form['itype']
             stock = request.form['stocks']
-            
+
+            # Handle file upload
+            if 'img' in request.files:
+                file = request.files['img']
+                if file.filename != '':
+                    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                        os.makedirs(app.config['UPLOAD_FOLDER'])
+
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_path)
+
+                    # Set the correct image path for the item
+                    img_path = file_path.replace("\\", "/")  # Replace backslashes in image path with forward slashes
+                    print("Image path:", img_path)  # Debugging output
+                else:
+                    img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image uploaded
+            else:
+                img_path = "/static/images/default_img.png"  # Absolute path to the default image if no image field in the form
             # Handle file upload and get the image path
             img_path = handle_file_upload(request)
             print("Image path:", img_path)  # Debugging output
 
             print("ISBN to be added:", isbn)  # Debugging output
-            
+
             success = addrecord('items', isbn=isbn, title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock, status=1, img=img_path)
             
             print("Addrecord success:", success)  # Debugging output
@@ -497,7 +569,7 @@ def insertItem():
             return redirect(url_for('items'))
     return render_template('login.html')
 
-
+# Function to update an existing item
 # Function to update an existing item
 @app.route('/update-item', methods=['POST'])
 def updateItem():
@@ -525,10 +597,8 @@ def updateItem():
                     flash('No new image uploaded')
             else:
                 img_path = None  # No image field in the form
-
             # Add record_id to updaterecord call
             success = updaterecord('items', record_id=id_data, isbn=isbn.title(), title=title.title(), author=author.title(), genre=genre.title(), price=price, i_type=itype, stock=stock, img=img_path or "/static/images/default_img/book.png")
-
             if success:
                 flash("Item updated successfully!")
             else:
@@ -577,7 +647,7 @@ def searchItem():
                 flash("Please type something to search!")
                 return redirect(url_for('items'))
             else:
-                data = getrecord('items', isbn=search_text, title=search_text, author=search_text, genre=search_text, price=search_text, i_type=search_text)
+                data = getrecord_v2('items', isbn=search_text, title=search_text, author=search_text, genre=search_text, price=search_text, i_type=search_text)
                 if not data:
                     flash(f"No record matches with {search_text}")
                     return redirect(url_for('items'))
@@ -659,6 +729,36 @@ def updateOrderStatus():
     
 
 
+#DATE RANGE
+@app.route('/orders')
+# Mock function to filter orders by date range
+def filter_orders_by_date_range(start_date, end_date):
+    # Mock data representing orders
+    orders = []
+    
+    # Filter orders based on the date range
+    if start_date and end_date:
+        filtered_orders = [order for order in orders if start_date <= order[2] <= end_date]
+    else:
+        filtered_orders = orders
+
+    return filtered_orders
+
+@app.route('/admin_orders')
+def admin_orders():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    # Filter orders based on the date range
+    filtered_orders = filter_orders_by_date_range(start_date, end_date)
+
+    # Assuming user information is stored in session
+    user = session.get('user')
+
+    return render_template('admin_orders.html', orders=filtered_orders, user=user)
+
+
+
 ######################
 #   DASHBOARD CODE   #
 ######################
@@ -667,7 +767,7 @@ def updateOrderStatus():
 @app.route('/get_items_data')
 def get_items_data():
     try:
-        data = getall('items', page=0)
+        data = getall('items', page=1)
         # Convert data to a list of dictionaries (JSON serializable format)
         items_data = [
             {'isbn': item[1], 'title': item[2], 'author': item[3], 'genre': item[4], 'price': item[5], 'i_type': item[6], 'stock': item[7]}
@@ -735,6 +835,10 @@ def total_orders():
     # Assuming 'orders' is the data you want to fetch using getall
     orders = getall('orders', page=1)  # Assuming you want all orders from the first page
     return jsonify(orders=orders)  # Return JSON response
+
+
+
+
 
 
 if __name__ == "__main__":
